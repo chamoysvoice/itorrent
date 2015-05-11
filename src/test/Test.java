@@ -1,13 +1,14 @@
 package test;
 
 import library.FileManager;
+import library.FormatManager;
 
 public class Test {
 	public static void main(String[] args) {
-		FileManager f = new FileManager("/home/jesus/Downloads/YOOtheme/YOOtheme.zip");
+		
+		FileManager f = new FileManager("C:/Users/Jesus/Downloads/AtomSetup.exe");
 		if(f.checkFile()){
-			System.out.println(f.count_chunks());
-			System.out.println(f.getFile().length() / (10000));
+			FormatManager.createFormatFile("test.itor", f);
 		} else {
 			System.out.println("File Not Found");
 		}
