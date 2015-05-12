@@ -9,6 +9,10 @@ public class FileManager {
 	private int chunkSize;
 	private boolean chunk_status[];
 
+	public int getChunkSize(){
+		return this.chunkSize;
+	}
+	
 	public FileManager(String path) {
 		this.file = new File(path);
 		this.path = path;

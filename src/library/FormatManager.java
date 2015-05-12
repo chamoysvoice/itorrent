@@ -11,8 +11,10 @@ public class FormatManager {
 		
 		try {
 			file_writer = new PrintWriter(GlobalVariables.TORRENT_URL + name, "UTF-8");
+			file_writer.write("z"+(file.getChunkSize() / GlobalVariables.KILOBYTE)+"\n");
 			file_writer.write("s45.55.151.143\n");
 			file_writer.write("s45.55.151.144\n");
+			
 			
 			for (int i = 0; i < countChunks; i++) {
 				file_writer.write("c"+ i + " " + file.getChunkMD5(i) + "\n");
