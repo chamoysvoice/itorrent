@@ -11,10 +11,11 @@ public class FormatManager {
 		
 		try {
 			file_writer = new PrintWriter(GlobalVariables.TORRENT_URL + name, "UTF-8");
-			file_writer.write("125.25.62.25\n");
+			file_writer.write("s45.55.151.143\n");
+			file_writer.write("s45.55.151.144\n");
 			
 			for (int i = 0; i < countChunks; i++) {
-				file_writer.write(i + " " + file.getChunkMD5(i) + "\n");
+				file_writer.write("c"+ i + " " + file.getChunkMD5(i) + "\n");
 			}
 			file_writer.close();
 		} catch (Exception e) {
@@ -22,4 +23,6 @@ public class FormatManager {
 		}
 		return 0;
 	}
+	
+	
 }
