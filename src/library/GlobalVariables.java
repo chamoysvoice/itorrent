@@ -9,4 +9,9 @@ public class GlobalVariables {
 	public static final int KILOBYTE = 1024;
 	public static final int MEGABYTE = 1048576;
 	public static final int FOUND = 1;
+
+	// UPnP
+	//==============================================================================
+	public static final String UPNP_PROTOCOL_TCP = "TCP";
+	public static final String UPNP_PROTOCOL_UDP = "UDP";
 }
