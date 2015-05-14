@@ -11,18 +11,21 @@ import library.GlobalVariables;
 import library.UPnP.GatewayDevice;
 import library.UPnP.GatewayDiscover;
 import library.UPnP.PortMappingEntry;
+import library.Utils.OSDetector;
+import library.Utils.PathBuilder;
+import library.Utils.UndefinedPathException;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
 import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.text.DateFormat;
 import java.util.Date;
 import java.util.Map;
 
 
 public class Test {
+
 	// UPnP Test variables
 	//==============================================================================
 	private static int SAMPLE_PORT = 6991;
@@ -31,11 +34,42 @@ public class Test {
     
 	// Core test variables
 	//==============================================================================
-	public static void main(String[] args) throws InterruptedException, SAXException, ParserConfigurationException, IOException {
-    //CoreTest();
+    private static PathBuilder itorrPath;
 
+	public static void main(String[] args) throws InterruptedException, SAXException, ParserConfigurationException, IOException, UndefinedPathException {
+        CheckFoldersTest();
+        CoreTest();
+        //UPnPTest();
+    }
+
+    private static void CheckFoldersTest() throws UndefinedPathException {
+        itorrPath = new PathBuilder(OSDetector.getOS());
+
+    }
+
+    // Core test function
+    //==============================================================================
+    private static void CoreTest() throws UndefinedPathException {
+        itorrPath = new PathBuilder(OSDetector.getOS());
+
+        FileManager f = new FileManager("TidePool.mp3");
+        if(f.checkFile()){
+            FormatManager.createFormatFile("18.itor", f);
+        } else {
+            System.out.println("File Not Found");
+        }
+        FileBuilder fb = new FileBuilder(itorrPath.getBasePath() + "18.itor", 18);
+        for (String server: fb.getServers()){
+            System.out.println(server);
+        }
+        fb.buildChunk();
+    }
+
+    // UPnP test function
+    //==============================================================================
+    private static void UPnPTest() {
         try {
-            TestUPnP();
+            StartTestUPnP();
         } catch (IOException e) {
             e.printStackTrace();
         } catch (SAXException e) {
@@ -47,28 +81,13 @@ public class Test {
         }
     }
 
-    // Core test function
-    //==============================================================================
-    private static void CoreTest() {
-        FileManager f = new FileManager("TidePool.mp3");
-        if(f.checkFile()){
-            FormatManager.createFormatFile("18.itor", f);
-        } else {
-            System.out.println("File Not Found");
-        }
-        FileBuilder fb = new FileBuilder(GlobalVariables.TORRENT_URL+"18.itor", 18);
-        for (String server: fb.getServers()){
-            System.out.println(server);
-        }
-        fb.buildChunk();
-    }
 
     /**
      * UPnP test function
      *
      * @returns Just prints out if everything worked fine or not
      */
-	private static void TestUPnP() throws IOException, SAXException, ParserConfigurationException, InterruptedException {
+	private static void StartTestUPnP() throws IOException, SAXException, ParserConfigurationException, InterruptedException {
 		addLogLine("Starting weupnp");
 
 		GatewayDiscover gatewayDiscover = new GatewayDiscover();
