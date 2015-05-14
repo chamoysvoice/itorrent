@@ -20,6 +20,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.URL;
 import java.text.DateFormat;
 import java.util.Date;
 import java.util.Map;
@@ -37,11 +38,12 @@ public class Test {
 	//==============================================================================
     private static PathBuilder itorrPath;
     private static boolean isCreated;
+    private static int testItorId = 18;
 
 	public static void main(String[] args) throws InterruptedException, SAXException, ParserConfigurationException, IOException, UndefinedPathException {
-        CheckFoldersTest();
-        UPnPTest();
-        //CoreTest();
+        //CheckFoldersTest();
+        //UPnPTest();
+        CoreTest();
     }
 
 	// Check / Create directories test
@@ -52,6 +54,7 @@ public class Test {
         checkBasePath();
         checkTorrentsPath();
         checkTempPath();
+        checkDownloadsPath();
     }
 
     // Base directory
@@ -119,16 +122,19 @@ public class Test {
     private static void CoreTest() throws UndefinedPathException {
         itorrPath = new PathBuilder(OSDetector.getOS());
 
-        FileManager f = new FileManager("TidePool.mp3");
+        URL location = Test.class.getProtectionDomain().getCodeSource().getLocation();
+        System.out.println(location.getFile());
+
+        FileManager f = new FileManager(location.getFile() + "TidePool.mp3");
         if(f.checkFile()){
-            FormatManager.createFormatFile("18.itor", f);
+            FormatManager.createFormatFile(testItorId, f);
         } else {
-            System.out.println("File Not Found");
+            System.out.println("Could not create .itor file\nCheck that the giving file exists on path\nAborting...");
+            return;
         }
-        FileBuilder fb = new FileBuilder(itorrPath.getBasePath() + "18.itor", 18);
-        for (String server: fb.getServers()){
-            System.out.println(server);
-        }
+
+        FileBuilder fb = new FileBuilder(itorrPath.getTorrentsPath() + testItorId + ".itor", testItorId);
+        fb.getServers().forEach(System.out::println);
         fb.buildChunk();
     }
 

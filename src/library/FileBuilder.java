@@ -1,9 +1,14 @@
 package library;
 
+import library.Utils.OSDetector;
+import library.Utils.PathBuilder;
+import library.Utils.UndefinedPathException;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.PrintWriter;
+import java.nio.file.Path;
 import java.util.ArrayList;
 
 public class FileBuilder {
@@ -16,10 +21,10 @@ public class FileBuilder {
 	private String temp_file_path;
 	
 	
-	public FileBuilder(String path, long id){
-		
+	public FileBuilder(String path, long id) throws UndefinedPathException {
+		PathBuilder itorrPath = new PathBuilder(OSDetector.getOS());
 		this.id = id;
-		this.temp_file_path = GlobalVariables.TORRENT_TEMP_URL + this.id + ".dt";
+		this.temp_file_path = itorrPath.getTempPath() + this.id + ".dt";
 		
 		// Get data "servers and chunks" from itor file
 		File f = new File(path);
@@ -46,11 +51,11 @@ public class FileBuilder {
 		
 		//make a temporary "itor" registry file, to keep record from downloads success
 		PrintWriter file_writer;
-		File temp_file = new File(GlobalVariables.TORRENT_TEMP_URL + this.id + ".dt");
+		File temp_file = new File(itorrPath.getTempPath() + this.id + ".dt");
 		if(!temp_file.exists()){
 			try {
 				
-				file_writer = new PrintWriter((GlobalVariables.TORRENT_TEMP_URL + this.id + ".dt"), "UTF-8");
+				file_writer = new PrintWriter((itorrPath.getTempPath() + this.id + ".dt"), "UTF-8");
 				file_writer.write("s"+count_chunks+"\n");
 				
 				for (int i = 0; i < count_chunks; i++) {
