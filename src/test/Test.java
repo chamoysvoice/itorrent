@@ -36,66 +36,82 @@ public class Test {
 	// Core test variables
 	//==============================================================================
     private static PathBuilder itorrPath;
+    private static boolean isCreated;
 
 	public static void main(String[] args) throws InterruptedException, SAXException, ParserConfigurationException, IOException, UndefinedPathException {
         CheckFoldersTest();
-        //UPnPTest();
+        UPnPTest();
         //CoreTest();
     }
 
 	// Check / Create directories test
 	//==============================================================================
     private static void CheckFoldersTest() throws UndefinedPathException {
-		itorrPath = new PathBuilder(OSDetector.getOS());
-		boolean isCreated = false;
+        itorrPath = new PathBuilder(OSDetector.getOS());
+        isCreated = false;
+        checkBasePath();
+        checkTorrentsPath();
+        checkTempPath();
+    }
 
-		// Base directory
-		File fBasePath = new File(itorrPath.getBasePath());
-		if (!fBasePath.exists()) {
-			addLogLine("Creating base directory: " + itorrPath.getBasePath());
+    // Base directory
+    private static boolean checkBasePath() throws UndefinedPathException {
+        File fBasePath = new File(itorrPath.getBasePath());
+        if (!fBasePath.exists()) {
+            addLogLine("Creating base directory: " + itorrPath.getBasePath());
 
-			try     { fBasePath.mkdir(); isCreated = true; }
-			catch   (SecurityException se) { }
+            try     { fBasePath.mkdir(); isCreated = true; }
+            catch   (SecurityException se) { }
 
-			if (isCreated) 	{addLogLine("Base directory created ✓");}
-			else 			{addLogLine("Failed creating base directory");}
-		}
+            if (isCreated) 	{ addLogLine("Base directory created ✓"); return true; }
+            else 			{ addLogLine("Failed creating base directory"); return false; }
+        }
+        else { addLogLine("Base directory exists ✓");  return true; }
+    }
 
-		// Torrents directory
-		fBasePath = new File(itorrPath.getTorrentsPath());
-		if (!fBasePath.exists()) {
-			addLogLine("Creating torrents directory: " + itorrPath.getTorrentsPath());
+    // Torrents directory
+    private static boolean checkTorrentsPath() throws UndefinedPathException {
+        File fBasePath = new File(itorrPath.getTorrentsPath());
+        if (!fBasePath.exists()) {
+            addLogLine("Creating torrents directory: " + itorrPath.getTorrentsPath());
 
-			try     { fBasePath.mkdir(); isCreated = true; }
-			catch   (SecurityException se) { }
+            try     { fBasePath.mkdir(); isCreated = true; }
+            catch   (SecurityException se) { }
 
-			if (isCreated) 	{addLogLine("Torrents directory created ✓");}
-			else 			{addLogLine("Failed creating torrents directory");}
-		}
+            if (isCreated) 	{ addLogLine("Torrents directory created ✓"); return true; }
+            else 			{ addLogLine("Failed creating torrents directory"); return false; }
+        }
+        else { addLogLine("Torrents directory exists ✓"); return true; }
+    }
 
-		// Temp directory
-		fBasePath = new File(itorrPath.getTempPath());
-		if (!fBasePath.exists()) {
-			addLogLine("Creating temp directory: " + itorrPath.getTempPath());
+    // Temp directory
+    private static boolean checkTempPath() throws UndefinedPathException {
+        File fBasePath = new File(itorrPath.getTempPath());
+        if (!fBasePath.exists()) {
+            addLogLine("Creating temp directory: " + itorrPath.getTempPath());
 
-			try     { fBasePath.mkdir(); isCreated = true;}
-			catch   (SecurityException se) { }
+            try     { fBasePath.mkdir(); isCreated = true; }
+            catch   (SecurityException se) { }
 
-			if (isCreated) 	{addLogLine("Temp directory created ✓");}
-			else 			{addLogLine("Failed creating temp directory");}
-		}
+            if (isCreated) 	{ addLogLine("Temp directory created ✓"); return true; }
+            else 			{ addLogLine("Failed creating temp directory"); return false; }
+        }
+        else { addLogLine("Temp directory exists ✓"); return true; }
+    }
 
-		// Downloads directory
-		fBasePath = new File(itorrPath.getDownloadsPath());
-		if (!fBasePath.exists()) {
-			addLogLine("Creating downloads directory: " + itorrPath.getDownloadsPath());
+    // Downloads directory
+    private static boolean checkDownloadsPath() throws UndefinedPathException {
+        File fBasePath = new File(itorrPath.getDownloadsPath());
+        if (!fBasePath.exists()) {
+            addLogLine("Creating downloads directory: " + itorrPath.getDownloadsPath());
 
-			try     { fBasePath.mkdir(); isCreated = true;}
-			catch   (SecurityException se) { }
+            try     { fBasePath.mkdir(); isCreated = true; }
+            catch   (SecurityException se) { }
 
-			if (isCreated) 	{addLogLine("Downloads directory created ✓");}
-			else 			{addLogLine("Failed creating downloads directory");}
-		}
+            if (isCreated) 	{ addLogLine("Downloads directory created ✓"); return true; }
+            else 			{ addLogLine("Failed creating downloads directory"); return false; }
+        }
+        else { addLogLine("Downloads directory exists ✓"); return true; }
     }
 
     // Core test function
@@ -118,27 +134,7 @@ public class Test {
 
     // UPnP test function
     //==============================================================================
-    private static void UPnPTest() {
-        try {
-            StartTestUPnP();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (SAXException e) {
-            e.printStackTrace();
-        } catch (ParserConfigurationException e) {
-            e.printStackTrace();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-    }
-
-
-    /**
-     * UPnP test function
-     *
-     * @returns Just prints out if everything worked fine or not
-     */
-	private static void StartTestUPnP() throws IOException, SAXException, ParserConfigurationException, InterruptedException {
+	private static void UPnPTest() throws IOException, SAXException, ParserConfigurationException, InterruptedException {
 		addLogLine("Starting weupnp");
 
 		GatewayDiscover gatewayDiscover = new GatewayDiscover();

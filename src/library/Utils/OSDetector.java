@@ -10,19 +10,10 @@ public class OSDetector {
     public enum OperativeSytem { WINDOWS, UNIX, OSX, UNKNOWN }
 
     public static OperativeSytem getOS() {
-        if (isWindows()) {
-            System.out.println("Windows detected");
-            return OperativeSytem.WINDOWS;
-        } else if (isMac()) {
-            System.out.println("Mac detected");
-            return OperativeSytem.OSX;
-        } else if (isUnix()) {
-            System.out.println("Unix/Linux detected");
-            return OperativeSytem.UNIX;
-        } else {
-            System.out.println("OS not supported");
-            return OperativeSytem.UNKNOWN;
-        }
+        if (isWindows())    { return OperativeSytem.WINDOWS; }
+        else if (isMac())   { return OperativeSytem.OSX; }
+        else if (isUnix())  { return OperativeSytem.UNIX; }
+        else { return OperativeSytem.UNKNOWN; }
     }
 
     public static boolean isWindows() { return (OS.indexOf("win") >= 0); }
