@@ -23,18 +23,16 @@ import java.util.Map;
 
 
 public class Test {
-
 	// UPnP Test variables
 	//==============================================================================
 	private static int SAMPLE_PORT = 6991;
 	private static short WAIT_TIME = 5;
 	private static boolean LIST_ALL_MAPPINGS = false;
-
-    // Core test variables
-    //==============================================================================
-
+    
+	// Core test variables
+	//==============================================================================
 	public static void main(String[] args) throws InterruptedException, SAXException, ParserConfigurationException, IOException {
-        //CoreTest();
+    //CoreTest();
 
         try {
             TestUPnP();
