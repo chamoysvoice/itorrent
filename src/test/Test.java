@@ -17,6 +17,7 @@ import library.Utils.UndefinedPathException;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
+import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.text.DateFormat;
@@ -38,13 +39,63 @@ public class Test {
 
 	public static void main(String[] args) throws InterruptedException, SAXException, ParserConfigurationException, IOException, UndefinedPathException {
         CheckFoldersTest();
-        CoreTest();
         //UPnPTest();
+        //CoreTest();
     }
 
+	// Check / Create directories test
+	//==============================================================================
     private static void CheckFoldersTest() throws UndefinedPathException {
-        itorrPath = new PathBuilder(OSDetector.getOS());
+		itorrPath = new PathBuilder(OSDetector.getOS());
+		boolean isCreated = false;
 
+		// Base directory
+		File fBasePath = new File(itorrPath.getBasePath());
+		if (!fBasePath.exists()) {
+			addLogLine("Creating base directory: " + itorrPath.getBasePath());
+
+			try     { fBasePath.mkdir(); isCreated = true; }
+			catch   (SecurityException se) { }
+
+			if (isCreated) 	{addLogLine("Base directory created ✓");}
+			else 			{addLogLine("Failed creating base directory");}
+		}
+
+		// Torrents directory
+		fBasePath = new File(itorrPath.getTorrentsPath());
+		if (!fBasePath.exists()) {
+			addLogLine("Creating torrents directory: " + itorrPath.getTorrentsPath());
+
+			try     { fBasePath.mkdir(); isCreated = true; }
+			catch   (SecurityException se) { }
+
+			if (isCreated) 	{addLogLine("Torrents directory created ✓");}
+			else 			{addLogLine("Failed creating torrents directory");}
+		}
+
+		// Temp directory
+		fBasePath = new File(itorrPath.getTempPath());
+		if (!fBasePath.exists()) {
+			addLogLine("Creating temp directory: " + itorrPath.getTempPath());
+
+			try     { fBasePath.mkdir(); isCreated = true;}
+			catch   (SecurityException se) { }
+
+			if (isCreated) 	{addLogLine("Temp directory created ✓");}
+			else 			{addLogLine("Failed creating temp directory");}
+		}
+
+		// Downloads directory
+		fBasePath = new File(itorrPath.getDownloadsPath());
+		if (!fBasePath.exists()) {
+			addLogLine("Creating downloads directory: " + itorrPath.getDownloadsPath());
+
+			try     { fBasePath.mkdir(); isCreated = true;}
+			catch   (SecurityException se) { }
+
+			if (isCreated) 	{addLogLine("Downloads directory created ✓");}
+			else 			{addLogLine("Failed creating downloads directory");}
+		}
     }
 
     // Core test function
@@ -141,7 +192,7 @@ public class Test {
 					break;
 				}
 				pmCount++;
-			} while (portMapping!=null);
+			} while (portMapping != null);
 		} else {
 			if (activeGW.getGenericPortMappingEntry(0, portMapping))
 				addLogLine("Portmapping #0 successfully retrieved (" + portMapping.getPortMappingDescription() + ":" + portMapping.getExternalPort() + ")");
