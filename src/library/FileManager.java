@@ -8,6 +8,7 @@ public class FileManager {
 	private File file;
 	private String path;
 	private int chunkSize;
+	private String name;
 	private boolean chunk_status[];
 
 	public int getChunkSize(){
@@ -18,6 +19,8 @@ public class FileManager {
 		this.file = new File(path);
 		this.path = path;
 		long size = this.file.length() / 1024 / 1024; // get it on MB
+		String []route = path.split("/");
+		this.name = route[route.length-1];
 		
 		/*
 		 * Files below 100 mb are 256 kb each chunk
@@ -58,6 +61,10 @@ public class FileManager {
 	public String getChunkMD5(int id){
 		byte[] chunk = this.get_chunk(id);
 		return Security.MD5(chunk);
+	}
+	
+	public String getName(){
+		return this.name;
 	}
 	
 	public byte[] get_chunk(int id){

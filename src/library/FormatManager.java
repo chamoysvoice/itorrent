@@ -23,6 +23,7 @@ public class FormatManager {
 		
 		try {
 			file_writer = new PrintWriter(itorrPath.getTorrentsPath() + itorFileName, "UTF-8");
+			file_writer.write("n" + file.getName()+"\n");
 			file_writer.write("z" + (file.getChunkSize() / GlobalVariables.KILOBYTE) + "\n");
 			for (String server: currentServers){
 				file_writer.write("s" + server + "\n");

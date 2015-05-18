@@ -8,15 +8,18 @@ import library.FileBuilder;
 import library.FileManager;
 import library.FormatManager;
 import library.GlobalVariables;
+import library.Security;
 import library.UPnP.GatewayDevice;
 import library.UPnP.GatewayDiscover;
 import library.UPnP.PortMappingEntry;
 import library.Utils.OSDetector;
 import library.Utils.PathBuilder;
 import library.Utils.UndefinedPathException;
+
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
@@ -38,12 +41,12 @@ public class Test {
 	//==============================================================================
     private static PathBuilder itorrPath;
     private static boolean isCreated;
-    private static int testItorId = 18;
+    private static int testItorId = 19;
 
 	public static void main(String[] args) throws InterruptedException, SAXException, ParserConfigurationException, IOException, UndefinedPathException {
-        //CheckFoldersTest();
-        UPnPTest();
-        //CoreTest();
+        CheckFoldersTest();
+        //UPnPTest();
+        CoreTest();
     }
 
 	// Check / Create directories test
@@ -121,11 +124,12 @@ public class Test {
     //==============================================================================
     private static void CoreTest() throws UndefinedPathException {
         itorrPath = new PathBuilder(OSDetector.getOS());
-
+        int chunk_id;
         URL location = Test.class.getProtectionDomain().getCodeSource().getLocation();
         System.out.println(location.getFile());
 
-        FileManager f = new FileManager(location.getFile() + "TidePool.mp3");
+        
+        FileManager f = new FileManager(location.getFile() + "game.mp4");
         if(f.checkFile()){
             FormatManager.createFormatFile(testItorId, f);
         } else {
@@ -135,7 +139,21 @@ public class Test {
 
         FileBuilder fb = new FileBuilder(itorrPath.getTorrentsPath() + testItorId + ".itor", testItorId);
         fb.getServers().forEach(System.out::println);
-        fb.addChunk(45, new byte[]{34,35,34,3});
+        while((chunk_id = fb.searchMissingChunk()) != -1){
+        	fb.addChunk(chunk_id, f.get_chunk(chunk_id));
+        }
+        if(!fb.isLastChunk()){
+        	System.out.println("adding last chunk");
+        	if(fb.addChunk(f.count_chunks() - 1, f.get_chunk(f.count_chunks()-1))){
+        		System.out.println("file completed");
+        	}
+        }
+        
+        if(fb.isLastChunk()){
+        	fb.moveToDownloads();
+        }
+        
+       
     }
 
     // UPnP test function
