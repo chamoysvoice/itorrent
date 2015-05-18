@@ -53,6 +53,10 @@ public class PathBuilder {
     public String getTempPath() {
         return this.temp_path = base_path + "Temp/";
     }
+    
+    public String getTorrentTempPath() {
+        return this.temp_path = base_path + "Itorr/Temp/";
+    }
 
     public String getDownloadsPath() {
         return this.downloads_path = base_path + "Downloads/";

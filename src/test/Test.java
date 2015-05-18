@@ -42,8 +42,8 @@ public class Test {
 
 	public static void main(String[] args) throws InterruptedException, SAXException, ParserConfigurationException, IOException, UndefinedPathException {
         //CheckFoldersTest();
-        //UPnPTest();
-        CoreTest();
+        UPnPTest();
+        //CoreTest();
     }
 
 	// Check / Create directories test
@@ -135,7 +135,7 @@ public class Test {
 
         FileBuilder fb = new FileBuilder(itorrPath.getTorrentsPath() + testItorId + ".itor", testItorId);
         fb.getServers().forEach(System.out::println);
-        fb.buildChunk();
+        fb.addChunk(45, new byte[]{34,35,34,3});
     }
 
     // UPnP test function
