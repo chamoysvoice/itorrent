@@ -2,6 +2,7 @@ package library;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.RandomAccessFile;
 
 public class FileManager {
 	private File file;
@@ -16,14 +17,20 @@ public class FileManager {
 	public FileManager(String path) {
 		this.file = new File(path);
 		this.path = path;
-		long size = this.file.length() / 1024 / 1024;
+		long size = this.file.length() / 1024 / 1024; // get it on MB
+		
+		/*
+		 * Files below 100 mb are 256 kb each chunk
+		 * Files between 100 mb and 500 mb are 512 kb each chunk
+		 * Files above 500 mb will have chunks of 1 mb of size.
+		 */
 		
 		if(size < 100){
-	        this.chunkSize = 1024 * 256;
-		} else if (size < 500){
-			this.chunkSize = 1024 * 512;
+	        this.chunkSize = 1024 * 256; // make each chunk 256 kb
+		} else if (size < 500){ 			
+			this.chunkSize = 1024 * 512; // make each chunk 512 kb
 		} else {
-			this.chunkSize = 1024 * 1024;
+			this.chunkSize = 1024 * 1024; // make each chunk 1 mb
 		}
 		
 		this.chunk_status = new boolean[this.chunkSize];
@@ -54,20 +61,15 @@ public class FileManager {
 	}
 	
 	public byte[] get_chunk(int id){
-		FileInputStream fi;
+		RandomAccessFile raf;
 		byte[] chunk = new byte[this.chunkSize];
-		int i = 0;
-		if(this.chunk_status[id] || true){
-			try {
-				fi = new FileInputStream(this.file);
-				while (fi.read(chunk) != -1) {
-					if(i == id){
-						fi.close();
-						return chunk;
-					} i++;
-				}
-				fi.close();
-			} catch (Exception e) {
+		if(this.chunk_status[id] || true){ // It should have chunk status on ram someday. when it does please remove the true. 
+			try{
+				raf = new RandomAccessFile(this.file, "r");
+				raf.seek(id * this.chunkSize);
+				raf.read(chunk);
+				raf.close();
+			} catch (Exception e){
 				e.printStackTrace();
 			}
 		}
