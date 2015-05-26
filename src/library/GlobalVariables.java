@@ -1,5 +1,8 @@
 package library;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class GlobalVariables {
 	public static final String BASE_URL = "C:/itorr/";
 	public static final String TORRENT_URL = GlobalVariables.BASE_URL + "Itorr/";
@@ -10,6 +13,12 @@ public class GlobalVariables {
 	public static final int KILOBYTE = 1024;
 	public static final int MEGABYTE = 1048576;
 	public static final int FOUND = 1;
+	
+	public static ArrayList<String> servers = new ArrayList<String>();
+	
+
+	
+	public static String current_server = "";
 
 	// UPnP
 	//======================== ======================================================
