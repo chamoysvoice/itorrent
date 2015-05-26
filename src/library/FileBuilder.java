@@ -6,12 +6,16 @@ import library.Utils.UndefinedPathException;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.PrintWriter;
 import java.io.RandomAccessFile;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -110,6 +114,26 @@ public class FileBuilder {
 		return -1;
 	}
 	
+	private void notifyChunkToServer(long chunk) throws Exception {
+		 
+		String urlParameters  = "chunk="+chunk+"&id="+this.id;
+		byte[] postData       = urlParameters.getBytes( StandardCharsets.UTF_8 );
+		int    postDataLength = postData.length;
+		String request        = GlobalVariables.current_server + "/session/chunk.php";
+		URL    url            = new URL( request );
+		HttpURLConnection conn= (HttpURLConnection) url.openConnection();           
+		conn.setDoOutput( true );
+		conn.setInstanceFollowRedirects( false );
+		conn.setRequestMethod( "POST" );
+		conn.setRequestProperty( "Content-Type", "application/x-www-form-urlencoded"); 
+		conn.setRequestProperty( "charset", "utf-8");
+		conn.setRequestProperty( "Content-Length", Integer.toString( postDataLength ));
+		conn.setUseCaches( false );
+		try( DataOutputStream wr = new DataOutputStream( conn.getOutputStream())) {
+		   wr.write( postData );
+		}
+	}
+	
 	public boolean isLastChunk(){
 		String last = "", line;
 		File temp_file = new File(itorrPath.getTempPath() + this.id + ".dt");
@@ -170,6 +194,7 @@ public class FileBuilder {
 					order + "\n" + status);
 			out.close();
 			
+			
 		} catch (Exception e){
 			e.printStackTrace();
 			return false;
@@ -180,6 +205,7 @@ public class FileBuilder {
 			
 			file_out.write(chunk);
 			file_out.close();
+			notifyChunkToServer(id);
 		} catch(Exception e){
 			e.printStackTrace();
 		}
@@ -234,6 +260,26 @@ public class FileBuilder {
 
 	}
 	
+	private void notifySeedToServer() throws Exception {
+		 
+		String urlParameters  = "id="+this.id;
+		byte[] postData       = urlParameters.getBytes( StandardCharsets.UTF_8 );
+		int    postDataLength = postData.length;
+		String request        = GlobalVariables.current_server + "/session/seeder.php";
+		URL    url            = new URL( request );
+		HttpURLConnection conn= (HttpURLConnection) url.openConnection();           
+		conn.setDoOutput( true );
+		conn.setInstanceFollowRedirects( false );
+		conn.setRequestMethod( "POST" );
+		conn.setRequestProperty( "Content-Type", "application/x-www-form-urlencoded"); 
+		conn.setRequestProperty( "charset", "utf-8");
+		conn.setRequestProperty( "Content-Length", Integer.toString( postDataLength ));
+		conn.setUseCaches( false );
+		try( DataOutputStream wr = new DataOutputStream( conn.getOutputStream())) {
+		   wr.write( postData );
+		}
+	}
+	
 	public boolean moveToDownloads(){
 		if(this.isLastChunk()){
 			File dst_file = new File(itorrPath.getDownloadsPath()+this.name);
@@ -262,10 +308,12 @@ public class FileBuilder {
 				dt_in.close();
 				dst_out.close();
 				src_in.close();
+				notifySeedToServer();
 			} catch(Exception e){
 				e.printStackTrace();
 				return false;
 			}
+			
 			return true;
 		} else {
 			System.out.println("File "+ this.id +":" + this.name +  " is not ready to be moved to Downloads dir");

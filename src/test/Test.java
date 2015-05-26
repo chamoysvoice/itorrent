@@ -9,6 +9,7 @@ import library.FileManager;
 import library.FormatManager;
 import library.GlobalVariables;
 import library.Security;
+import library.Session;
 import library.UPnP.GatewayDevice;
 import library.UPnP.GatewayDiscover;
 import library.UPnP.PortMappingEntry;
@@ -44,7 +45,7 @@ public class Test {
     private static int testItorId = 19;
 
 	public static void main(String[] args) throws InterruptedException, SAXException, ParserConfigurationException, IOException, UndefinedPathException {
-        CheckFoldersTest();
+        //CheckFoldersTest();
         //UPnPTest();
         CoreTest();
     }
@@ -127,7 +128,8 @@ public class Test {
         int chunk_id;
         URL location = Test.class.getProtectionDomain().getCodeSource().getLocation();
         System.out.println(location.getFile());
-
+        Session s = new Session();
+        s.changeServer();
         
         FileManager f = new FileManager(location.getFile() + "game.mp4");
         if(f.checkFile()){
@@ -136,7 +138,7 @@ public class Test {
             System.out.println("Could not create .itor file\nCheck that the giving file exists on path\nAborting...");
             return;
         }
-
+        /*
         FileBuilder fb = new FileBuilder(itorrPath.getTorrentsPath() + testItorId + ".itor", testItorId);
         fb.getServers().forEach(System.out::println);
         while((chunk_id = fb.searchMissingChunk()) != -1){
@@ -152,7 +154,7 @@ public class Test {
         if(fb.isLastChunk()){
         	fb.moveToDownloads();
         }
-        
+        */
        
     }
 

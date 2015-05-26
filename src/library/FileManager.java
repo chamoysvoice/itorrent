@@ -1,8 +1,14 @@
 package library;
 
+import java.io.BufferedReader;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.InputStreamReader;
 import java.io.RandomAccessFile;
+import java.net.HttpURLConnection;
+import java.net.URL;
+
 
 public class FileManager {
 	private File file;
@@ -10,17 +16,59 @@ public class FileManager {
 	private int chunkSize;
 	private String name;
 	private boolean chunk_status[];
+	private long id;
 
 	public int getChunkSize(){
 		return this.chunkSize;
 	}
 	
-	public FileManager(String path) {
+	private void getIdFromServer() throws Exception{
+		String url = GlobalVariables.current_server + "/torrent/addTorrent.php";
+		System.out.println(GlobalVariables.current_server + "/torrent/addTorrent.php");
+		URL obj = new URL(url);
+		HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+ 
+		//add reuqest header
+		con.setRequestMethod("POST");
+		con.setRequestProperty("User-Agent", "Mozilla/5.0");
+		con.setRequestProperty("Accept-Language", "en-US,en;q=0.5");
+ 
+		String urlParameters = "name="+ this.name +"&size=" + this.chunkSize;
+ 
+		// Send post request
+		con.setDoOutput(true);
+		DataOutputStream wr = new DataOutputStream(con.getOutputStream());
+		wr.writeBytes(urlParameters);
+		wr.flush();
+		wr.close();
+ 
+		int responseCode = con.getResponseCode();
+		System.out.println("\nSending 'POST' request to URL : " + url);
+		System.out.println("Post parameters : " + urlParameters);
+		System.out.println("Response Code : " + responseCode);
+ 
+		BufferedReader in = new BufferedReader(
+		        new InputStreamReader(con.getInputStream()));
+		String inputLine;
+		StringBuffer response = new StringBuffer();
+ 
+		while ((inputLine = in.readLine()) != null) {
+			response.append(inputLine);
+		}
+		in.close();
+	
+		this.id = Integer.parseInt(response.toString());
+		//print result
+		//System.out.println(Integer.parseInt(response.toString()));
+	}
+	
+	public FileManager(String path)  {
 		this.file = new File(path);
 		this.path = path;
 		long size = this.file.length() / 1024 / 1024; // get it on MB
 		String []route = path.split("/");
 		this.name = route[route.length-1];
+		
 		
 		/*
 		 * Files below 100 mb are 256 kb each chunk
@@ -37,7 +85,7 @@ public class FileManager {
 		}
 		
 		this.chunk_status = new boolean[this.chunkSize];
-		
+		try{getIdFromServer();} catch (Exception e){e.printStackTrace();}
 		
 	}
 
@@ -85,7 +133,8 @@ public class FileManager {
 	}
 
 
-
+	
+	
 	public int count_chunks() {
 		FileInputStream fi;
 		int chunk_count = 0;

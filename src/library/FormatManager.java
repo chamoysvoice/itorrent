@@ -18,7 +18,7 @@ public class FormatManager {
 
 		String itorFileName = id + ".itor";
         List<String> currentServers = new ArrayList<String>() {
-            { add("45.55.151.143"); add("45.55.151.144"); }
+            { add("45.55.151.143"); add("45.55.232.142"); add("46.101.38.180");}
         };
 		
 		try {
