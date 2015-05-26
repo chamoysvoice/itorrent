@@ -20,16 +20,10 @@ import java.nio.file.Paths;
 public class Start {
 
     public static void main(String[] args) throws InterruptedException, SAXException, ParserConfigurationException, IOException, UndefinedPathException {
-        Server.startServer();
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> { Server.stopServer(); }));
-
-        /*
-        URL location = Test.class.getProtectionDomain().getCodeSource().getLocation();
+        //Server.startServer();
+        //Runtime.getRuntime().addShutdownHook(new Thread(() -> { Server.stopServer(); }));
 
         Chunk chunk = new Chunk();
-        byte[] data = new byte[100*1024*1024];
-
-        chunk.send(data).to("127.0.0.1").start();
-        */
+        chunk.request(1,3).start();
     }
 }
