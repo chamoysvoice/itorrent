@@ -1,26 +1,64 @@
 package library.Tunnel;
 
+import library.GlobalVariables;
+import test.Test;
+
 import java.io.*;
 import java.net.Socket;
+import java.net.URL;
 
 /**
  * Created by leind on 14/05/15.
  */
-public class Chunk {
+public class Chunk extends Thread {
     private byte[] chunk;
     private String ip;
     private Socket socket;
+    private int serverPort = GlobalVariables.SERVER_PORT;
+    private int fromByte = 0;
 
-    Chunk(byte[] chunk, String ip) {
+    // Thread variables
+    volatile boolean finished = false;
+
+    public Chunk() {}
+
+    public Chunk(byte[] chunk, String ip) {
         this.chunk = chunk;
         this.ip = ip;
+    }
+
+    public Chunk send(byte[] chunk) {
+        this.chunk = chunk;
+        return this;
+    }
+
+    public Chunk to(String ip) {
+        this.ip = ip;
+        return this;
+    }
+
+    public Chunk fromByte(int fromByte) {
+        this.fromByte = fromByte;
+        return this;
+    }
+
+    // Threading stuff
+    //=========================================================
+    public void stopMe() {
+        finished = true;
+    }
+
+    public void run() {
+        //Code
+        try { sendBytes(); }
+        catch (IOException e) { e.printStackTrace(); }
     }
 
     /**
      * Sends the current chunk over TCP
      */
-    public void sendBytes() throws IOException {
-        sendBytes(chunk, 0, chunk.length);
+    private void sendBytes() throws IOException {
+        sendBytes(chunk, this.fromByte, chunk.length);
     }
 
     /**
@@ -29,22 +67,28 @@ public class Chunk {
      *
      * @param byteArray bytes to send
      * @param start     starting from byte in this position
-     * @param len       how many bytes starting from position in start
+     * @param length       how many bytes starting from position in start
      */
-    public void sendBytes(byte[] byteArray, int start, int len) throws IOException {
-        if (len < 0)
+    private void sendBytes(byte[] byteArray, int start, int length) throws IOException {
+        if (length < 0)
             throw new IllegalArgumentException("Negative length not allowed");
         if (start < 0 || start >= byteArray.length)
             throw new IndexOutOfBoundsException("Out of bounds: " + start);
-        // Other checks if needed.
+
+        socket = new Socket(this.ip, this.serverPort);
 
         OutputStream out = socket.getOutputStream();
         DataOutputStream dos = new DataOutputStream(out);
 
-        dos.writeInt(len);
-        if (len > 0) {
-            dos.write(byteArray, start, len);
+        dos.writeInt(length);
+        if (length > 0) {
+            dos.write(byteArray, start, length);
         }
+
+        out.flush();
+        out.close();
+        socket.close();
+
     }
 
     /**
@@ -52,7 +96,7 @@ public class Chunk {
      *
      * @return  byte array of the data received
      */
-    public byte[] readBytes() throws IOException {
+    private byte[] readBytes() throws IOException {
         InputStream in = socket.getInputStream();
         DataInputStream dis = new DataInputStream(in);
 
@@ -62,10 +106,5 @@ public class Chunk {
             dis.readFully(data);
         }
         return data;
-    }
-
-    private int getAvailablePort() {
-        //TODO return an open port
-        throw new UnsupportedOperationException("Uninmplemented");
     }
 }

@@ -8,7 +8,7 @@ import library.FileBuilder;
 import library.FileManager;
 import library.FormatManager;
 import library.GlobalVariables;
-import library.Security;
+import library.Tunnel.Server.PoolServer;
 import library.UPnP.GatewayDevice;
 import library.UPnP.GatewayDiscover;
 import library.UPnP.PortMappingEntry;
@@ -33,7 +33,7 @@ public class Test {
 
 	// UPnP Test variables
 	//==============================================================================
-	private static int SAMPLE_PORT = 6991;
+	private static int SAMPLE_PORT = 6992;
 	private static short WAIT_TIME = 5;
 	private static boolean LIST_ALL_MAPPINGS = false;
     
@@ -44,9 +44,107 @@ public class Test {
     private static int testItorId = 19;
 
 	public static void main(String[] args) throws InterruptedException, SAXException, ParserConfigurationException, IOException, UndefinedPathException {
-        CheckFoldersTest();
+        //CheckFoldersTest();
         //UPnPTest();
-        CoreTest();
+        //CoreTest();
+        ServerTest();
+    }
+
+    // Multi-client server test
+    //==============================================================================
+    private static void ServerTest() {
+        GatewayDevice activeGw = null;
+        try { activeGw = openPort(); }
+        catch (IOException e) { e.printStackTrace(); }
+        catch (SAXException e) { e.printStackTrace(); }
+        catch (ParserConfigurationException e) { e.printStackTrace(); }
+
+        PoolServer server = new PoolServer(SAMPLE_PORT);
+        new Thread(server).start();
+
+        try { Thread.sleep(30 * 1000); }
+        catch (InterruptedException e) { e.printStackTrace(); }
+
+        System.out.println("Stopping Server");
+        server.stop();
+
+        try { closePort(activeGw); }
+        catch (IOException e) { e.printStackTrace(); }
+        catch (SAXException e) { e.printStackTrace(); }
+    }
+
+    // Open port assuming UPnPTest() passed correctly
+    //==============================================================================
+    private static GatewayDevice openPort() throws IOException, SAXException, ParserConfigurationException {
+        addLogLine("Starting weupnp");
+
+        GatewayDiscover gatewayDiscover = new GatewayDiscover();
+        addLogLine("Looking for Gateway Devices...");
+
+        Map<InetAddress, GatewayDevice> gateways = gatewayDiscover.discover();
+
+        if (gateways.isEmpty()) {
+            addLogLine("No gateways found");
+            addLogLine("Stopping weupnp");
+            return null;
+        }
+
+        // choose the first active gateway for the tests
+        GatewayDevice activeGW = gatewayDiscover.getValidGateway();
+
+        if (null != activeGW) {
+            addLogLine("Using gateway: " + activeGW.getFriendlyName());
+        } else {
+            addLogLine("No active gateway device found");
+            addLogLine("Stopping weupnp");
+            return null;
+        }
+
+        // testing getGenericPortMappingEntry
+        PortMappingEntry portMapping = new PortMappingEntry();
+        if (LIST_ALL_MAPPINGS) {
+            int pmCount = 0;
+            do {
+                if (activeGW.getGenericPortMappingEntry(pmCount, portMapping))
+                    addLogLine("Portmapping #" + pmCount + " successfully retrieved (" + portMapping.getPortMappingDescription() + ":" + portMapping.getExternalPort() + ")");
+                else{
+                    addLogLine("Portmapping #" + pmCount + " retrieval failed");
+                    break;
+                }
+                pmCount++;
+            } while (portMapping != null);
+        } else {
+            if (activeGW.getGenericPortMappingEntry(0, portMapping))
+                addLogLine("Portmapping #0 successfully retrieved (" + portMapping.getPortMappingDescription() + ":" + portMapping.getExternalPort() + ")");
+            else
+                addLogLine("Portmapping #0 retrival failed");
+        }
+
+        InetAddress localAddress = activeGW.getLocalAddress();
+        addLogLine("Using local address: " + localAddress.getHostAddress());
+        String externalIPAddress = activeGW.getExternalIPAddress();
+        addLogLine("External address: " + externalIPAddress);
+
+        if (activeGW.getSpecificPortMappingEntry(SAMPLE_PORT, GlobalVariables.UPNP_PROTOCOL_TCP, portMapping)) {
+            addLogLine("Port " + SAMPLE_PORT + " is already mapped. Aborting test.");
+            return null;
+        } else {
+            if (activeGW.addPortMapping(SAMPLE_PORT, SAMPLE_PORT, localAddress.getHostAddress(),
+                    GlobalVariables.UPNP_PROTOCOL_TCP, "test")) {
+                addLogLine("Mapping SUCCESSFUL on port " + (SAMPLE_PORT) + " ✓");
+            }
+            return activeGW;
+        }
+    }
+
+    // Close port
+    //==============================================================================
+    private static void closePort(GatewayDevice activeGW) throws IOException, SAXException {
+        if (activeGW.deletePortMapping(SAMPLE_PORT, GlobalVariables.UPNP_PROTOCOL_TCP)) {
+            addLogLine("Port " + (SAMPLE_PORT) + ": mapping removed, test SUCCESSFUL ✓");
+        } else {
+            addLogLine("Port mapping removal FAILED");
+        }
     }
 
 	// Check / Create directories test
@@ -152,8 +250,6 @@ public class Test {
         if(fb.isLastChunk()){
         	fb.moveToDownloads();
         }
-        
-       
     }
 
     // UPnP test function

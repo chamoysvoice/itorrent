@@ -27,7 +27,6 @@ public class FileManager {
 		 * Files between 100 mb and 500 mb are 512 kb each chunk
 		 * Files above 500 mb will have chunks of 1 mb of size.
 		 */
-		
 		if(size < 100){
 	        this.chunkSize = 1024 * 256; // make each chunk 256 kb
 		} else if (size < 500){ 			
@@ -83,8 +82,6 @@ public class FileManager {
 		return chunk;
 		
 	}
-
-
 
 	public int count_chunks() {
 		FileInputStream fi;

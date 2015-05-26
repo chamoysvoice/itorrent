@@ -202,10 +202,8 @@ public class FileBuilder {
 			line = dt_in.readLine();
 			t = line.split("=");
 			order = t[1].split(",");
+
 			for(int i = 0; i < order.length; i++){
-				
-				
-				
 				if(i == id){
 					if(i == this.number_of_chunks - 1){ // this handles the last chunk (because is not fully sized)
 						raf.seek(i*  this.chunk_size);
@@ -227,11 +225,8 @@ public class FileBuilder {
 		}	catch (Exception e){
 			e.printStackTrace();
 		}
-	
-		
+
 		return chunk;
-
-
 	}
 	
 	public boolean moveToDownloads(){

@@ -15,4 +15,8 @@ public class GlobalVariables {
 	//======================== ======================================================
 	public static final String UPNP_PROTOCOL_TCP = "TCP";
 	public static final String UPNP_PROTOCOL_UDP = "UDP";
+
+	// Ports
+	//===============================================================================
+	public static final int SERVER_PORT = 6992;
 }
