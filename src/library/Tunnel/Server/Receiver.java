@@ -48,7 +48,6 @@ public class Receiver implements Runnable{
         try {
             inStream = new ObjectInputStream(clientSocket.getInputStream());
             chunk = (ChunkModel) inStream.readObject();
-            System.out.println("Object received");
         }
         catch (IOException e) { e.printStackTrace(); }
         catch (ClassNotFoundException e) { e.printStackTrace(); }

@@ -48,7 +48,6 @@ public class PairReceiver implements Runnable{
         catch (IOException ex) { System.out.println("Can't get socket input stream. "); }
         catch (ClassNotFoundException e) { e.printStackTrace(); }
 
-        System.out.println("Pair connected looking for: " + message);
         notifyPair(message);
 
         try { clientSocket.close(); }

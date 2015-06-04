@@ -23,8 +23,8 @@ public class Start {
 
     public static void main(String[] args) throws InterruptedException, SAXException, ParserConfigurationException, IOException, UndefinedPathException {
         //startServers();
+        requestSomething();
         sendSomething();
-        //requestSomething();
     }
 
     // Starts core server and PairServer to communicate with other clients
@@ -56,7 +56,9 @@ public class Start {
     static class PairCatcher implements PairListener {
         @Override
         public void onPairConnected(String message, long fileID, long chunkID) {
-            System.out.print("Message: " + message + "Chunk: " + fileID + ", " + chunkID);
+            System.out.println("-------------------");
+            System.out.print("Message: " + message + "\nFileID: " + fileID + "\nChunkId: " + chunkID);
+            System.out.println("------------------- \n");
         }
     }
 
@@ -64,9 +66,11 @@ public class Start {
     static class ChunkCatcher implements ChunkListener{
         @Override
         public void onChunkReceived(ChunkModel chunk) {
+            System.out.println("-------------------");
             System.out.println("File: " + chunk.getFileID());
             System.out.println("Chunk: " + chunk.getChunkID());
-            System.out.println(Arrays.equals(aa, chunk.getData()));
+            System.out.println("Same byte array: " + Arrays.equals(aa, chunk.getData()));
+            System.out.println("\n------------------- \n");
         }
     }
 }
