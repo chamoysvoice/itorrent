@@ -11,14 +11,15 @@ import java.util.List;
 
 public class FormatManager {
 
-	public static int createFormatFile(int id, FileManager file) throws UndefinedPathException {
+	public static int createFormatFile(FileManager file) throws UndefinedPathException {
+		long id = file.id;
 		PathBuilder itorrPath = new PathBuilder(OSDetector.getOS());
 		PrintWriter file_writer;
 		long countChunks = file.count_chunks();
 
 		String itorFileName = id + ".itor";
         List<String> currentServers = new ArrayList<String>() {
-            { add("45.55.151.143"); add("45.55.151.144"); }
+            { add("45.55.151.143"); add("45.55.232.142"); add("46.101.38.180");}
         };
 		
 		try {

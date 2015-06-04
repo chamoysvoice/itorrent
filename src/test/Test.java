@@ -4,17 +4,16 @@
 
 package test;
 
-import library.FileBuilder;
-import library.FileManager;
-import library.FormatManager;
-import library.GlobalVariables;
-import library.Tunnel.Server.PoolServer;
+import jdk.nashorn.internal.objects.Global;
+import library.*;
 import library.UPnP.GatewayDevice;
 import library.UPnP.GatewayDiscover;
 import library.UPnP.PortMappingEntry;
 import library.Utils.OSDetector;
 import library.Utils.PathBuilder;
 import library.Utils.UndefinedPathException;
+
+import java.util.ArrayList;
 
 import org.xml.sax.SAXException;
 
@@ -27,13 +26,15 @@ import java.net.URL;
 import java.text.DateFormat;
 import java.util.Date;
 import java.util.Map;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 
 public class Test {
 
 	// UPnP Test variables
 	//==============================================================================
-	private static int SAMPLE_PORT = 6992;
+	private static int SAMPLE_PORT = 6991;
 	private static short WAIT_TIME = 5;
 	private static boolean LIST_ALL_MAPPINGS = false;
     
@@ -41,110 +42,44 @@ public class Test {
 	//==============================================================================
     private static PathBuilder itorrPath;
     private static boolean isCreated;
-    private static int testItorId = 19;
+    private static Session s;
+
 
 	public static void main(String[] args) throws InterruptedException, SAXException, ParserConfigurationException, IOException, UndefinedPathException {
-        //CheckFoldersTest();
+
+        CheckFoldersTest();
         //UPnPTest();
         //CoreTest();
-        ServerTest();
-    }
 
-    // Multi-client server test
-    //==============================================================================
-    private static void ServerTest() {
-        GatewayDevice activeGw = null;
-        try { activeGw = openPort(); }
-        catch (IOException e) { e.printStackTrace(); }
-        catch (SAXException e) { e.printStackTrace(); }
-        catch (ParserConfigurationException e) { e.printStackTrace(); }
 
-        PoolServer server = new PoolServer(SAMPLE_PORT);
-        new Thread(server).start();
+        // Start
 
-        try { Thread.sleep(30 * 1000); }
-        catch (InterruptedException e) { e.printStackTrace(); }
+        // Se inicia conexion con un servidor
+        s = new Session();
+        s.changeServer();
+        s.start();
 
-        System.out.println("Stopping Server");
-        server.stop();
-
-        try { closePort(activeGw); }
-        catch (IOException e) { e.printStackTrace(); }
-        catch (SAXException e) { e.printStackTrace(); }
-    }
-
-    // Open port assuming UPnPTest() passed correctly
-    //==============================================================================
-    private static GatewayDevice openPort() throws IOException, SAXException, ParserConfigurationException {
-        addLogLine("Starting weupnp");
-
-        GatewayDiscover gatewayDiscover = new GatewayDiscover();
-        addLogLine("Looking for Gateway Devices...");
-
-        Map<InetAddress, GatewayDevice> gateways = gatewayDiscover.discover();
-
-        if (gateways.isEmpty()) {
-            addLogLine("No gateways found");
-            addLogLine("Stopping weupnp");
-            return null;
-        }
-
-        // choose the first active gateway for the tests
-        GatewayDevice activeGW = gatewayDiscover.getValidGateway();
-
-        if (null != activeGW) {
-            addLogLine("Using gateway: " + activeGW.getFriendlyName());
-        } else {
-            addLogLine("No active gateway device found");
-            addLogLine("Stopping weupnp");
-            return null;
-        }
-
-        // testing getGenericPortMappingEntry
-        PortMappingEntry portMapping = new PortMappingEntry();
-        if (LIST_ALL_MAPPINGS) {
-            int pmCount = 0;
-            do {
-                if (activeGW.getGenericPortMappingEntry(pmCount, portMapping))
-                    addLogLine("Portmapping #" + pmCount + " successfully retrieved (" + portMapping.getPortMappingDescription() + ":" + portMapping.getExternalPort() + ")");
-                else{
-                    addLogLine("Portmapping #" + pmCount + " retrieval failed");
-                    break;
-                }
-                pmCount++;
-            } while (portMapping != null);
-        } else {
-            if (activeGW.getGenericPortMappingEntry(0, portMapping))
-                addLogLine("Portmapping #0 successfully retrieved (" + portMapping.getPortMappingDescription() + ":" + portMapping.getExternalPort() + ")");
-            else
-                addLogLine("Portmapping #0 retrival failed");
-        }
-
-        InetAddress localAddress = activeGW.getLocalAddress();
-        addLogLine("Using local address: " + localAddress.getHostAddress());
-        String externalIPAddress = activeGW.getExternalIPAddress();
-        addLogLine("External address: " + externalIPAddress);
-
-        if (activeGW.getSpecificPortMappingEntry(SAMPLE_PORT, GlobalVariables.UPNP_PROTOCOL_TCP, portMapping)) {
-            addLogLine("Port " + SAMPLE_PORT + " is already mapped. Aborting test.");
-            return null;
-        } else {
-            if (activeGW.addPortMapping(SAMPLE_PORT, SAMPLE_PORT, localAddress.getHostAddress(),
-                    GlobalVariables.UPNP_PROTOCOL_TCP, "test")) {
-                addLogLine("Mapping SUCCESSFUL on port " + (SAMPLE_PORT) + " ✓");
+        /*
+        // se inician todos los archivos que hay
+        int dot;
+        ArrayList<String> files  = new ArrayList<String>();
+        ArrayList<FileBuilder> filebuilders = new ArrayList<FileBuilder>();
+        files = FileManager.listFilesForFolder(new File(itorrPath.getTorrentsPath()));
+        for (String s: files){
+            if (s.charAt(s.length()-1) == 'r'){
+                dot = s.indexOf(".");
+                filebuilders.add(new FileBuilder(itorrPath.getTorrentsPath()+ s.substring(0,dot) + ".itor", Long.parseLong(s.substring(0,dot))));
             }
-            return activeGW;
         }
-    }
+        */
+        try {
+            FileSearcher.searchChunk(237, 40); // regresa el IP de todos los que tengan ese chunk
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
-    // Close port
-    //==============================================================================
-    private static void closePort(GatewayDevice activeGW) throws IOException, SAXException {
-        if (activeGW.deletePortMapping(SAMPLE_PORT, GlobalVariables.UPNP_PROTOCOL_TCP)) {
-            addLogLine("Port " + (SAMPLE_PORT) + ": mapping removed, test SUCCESSFUL ✓");
-        } else {
-            addLogLine("Port mapping removal FAILED");
-        }
+
+        s.yield();
     }
 
 	// Check / Create directories test
@@ -226,30 +161,32 @@ public class Test {
         URL location = Test.class.getProtectionDomain().getCodeSource().getLocation();
         System.out.println(location.getFile());
 
-        
-        FileManager f = new FileManager(location.getFile() + "game.mp4");
+        FileManager f = new FileManager(location.getFile() + "idea.tar.gz");
         if(f.checkFile()){
-            FormatManager.createFormatFile(testItorId, f);
+            FormatManager.createFormatFile(f);
         } else {
             System.out.println("Could not create .itor file\nCheck that the giving file exists on path\nAborting...");
             return;
         }
 
-        FileBuilder fb = new FileBuilder(itorrPath.getTorrentsPath() + testItorId + ".itor", testItorId);
+        System.out.println(itorrPath.getTorrentsPath());
+        FileBuilder fb = new FileBuilder(itorrPath.getTorrentsPath() + f.id + ".itor", f.id);
         fb.getServers().forEach(System.out::println);
         while((chunk_id = fb.searchMissingChunk()) != -1){
         	fb.addChunk(chunk_id, f.get_chunk(chunk_id));
         }
         if(!fb.isLastChunk()){
-        	System.out.println("adding last chunk");
-        	if(fb.addChunk(f.count_chunks() - 1, f.get_chunk(f.count_chunks()-1))){
-        		System.out.println("file completed");
+            System.out.println("adding last chunk");
+            if (fb.addChunk(f.count_chunks() - 1, f.get_chunk(f.count_chunks() - 1))) {
+                System.out.println("file completed");
         	}
         }
         
         if(fb.isLastChunk()){
         	fb.moveToDownloads();
         }
+
+
     }
 
     // UPnP test function

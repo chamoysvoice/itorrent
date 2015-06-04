@@ -4,14 +4,10 @@ import library.Utils.OSDetector;
 import library.Utils.PathBuilder;
 import library.Utils.UndefinedPathException;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.PrintWriter;
-import java.io.RandomAccessFile;
+import java.io.*;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -26,12 +22,14 @@ public class FileBuilder {
 	private String temp_file_path;
 	private PathBuilder itorrPath;
 	private String name;
-	
+	private boolean complete;
+
 	public FileBuilder(String path, long id) throws UndefinedPathException {
+		this.complete = false;
 		this.itorrPath = new PathBuilder(OSDetector.getOS());
 		this.id = id;
 		this.temp_file_path = itorrPath.getTempPath() + this.id + ".dt";
-		
+
 		// Get data "servers and chunks" from itor file
 		File f = new File(path);
 		String letter;
@@ -62,11 +60,11 @@ public class FileBuilder {
 		File temp_file = new File(itorrPath.getTempPath() + this.id + ".dt");
 		if(!temp_file.exists()){
 			try {
-				
+
 				file_writer = new PrintWriter((itorrPath.getTempPath() + this.id + ".dt"), "UTF-8");
 				file_writer.write("s"+count_chunks+"\n");
 				file_writer.write("b=\n");
-				
+
 				for (int i = 0; i < count_chunks; i++) {
 					file_writer.write("c"+ i + "="+ 0+"\n");
 				}
@@ -74,7 +72,83 @@ public class FileBuilder {
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
+		} else {
+			notifyStatus();
 		}
+	}
+
+	public boolean isComplete() {
+		return this.complete;
+	}
+
+	public void notifyStatus() {
+		File f = new File(this.temp_file_path);
+		String letter;
+		boolean full = true;
+		int i = 0, status;
+		try (BufferedReader br = new BufferedReader(new FileReader(f))) {
+			for (int j = 0; j < 2; j++) {
+				for (String line; (line = br.readLine()) != null; ) {
+					letter = line.substring(0, 1);
+					if (i == this.number_of_chunks) break; // leave the last chunk pending so we can glue it
+					if (letter.equals("c")) {
+						String[] parts = line.split("=");
+						String lastDigit = parts[parts.length - 1].trim();
+						status = Integer.parseInt(lastDigit);
+
+						if (status != GlobalVariables.FOUND) {
+							full = false;
+						}
+						if (j == 1 && status == GlobalVariables.FOUND) {
+							notifyChunkToServer((long) i);
+						}
+						i++;
+					}
+				}
+				if (full) {
+					notifySeeder();
+					this.complete = true;
+					break;
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+	}
+
+	private void notifySeeder() throws Exception {
+
+		String url = GlobalVariables.current_server + "/session/seeder.php";
+
+		URL obj = new URL(url);
+		HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+
+		//add reuqest header
+		con.setRequestMethod("POST");
+		con.setRequestProperty("User-Agent", "Mozilla/5.0");
+		con.setRequestProperty("Accept-Language", "en-US,en;q=0.5");
+
+		String urlParameters = "id=" + this.id + "&sid=" + Session.session_id;
+
+		// Send post request
+		con.setDoOutput(true);
+		DataOutputStream wr = new DataOutputStream(con.getOutputStream());
+		wr.writeBytes(urlParameters);
+		wr.flush();
+		wr.close();
+
+		int responseCode = con.getResponseCode();
+
+		BufferedReader in = new BufferedReader(
+				new InputStreamReader(con.getInputStream()));
+		String inputLine;
+		StringBuffer response = new StringBuffer();
+
+		while ((inputLine = in.readLine()) != null) {
+			response.append(inputLine);
+		}
+		in.close();
 	}
 	
 	private void addServer(String server){
@@ -108,6 +182,40 @@ public class FileBuilder {
 			e.printStackTrace();
 		}
 		return -1;
+	}
+	
+	private void notifyChunkToServer(long chunk) throws Exception {
+
+		String url = GlobalVariables.current_server + "/session/peer.php";
+
+		URL obj = new URL(url);
+		HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+
+		//add reuqest header
+		con.setRequestMethod("POST");
+		con.setRequestProperty("User-Agent", "Mozilla/5.0");
+		con.setRequestProperty("Accept-Language", "en-US,en;q=0.5");
+
+		String urlParameters = "id=" + this.id + "&chunk=" + chunk + "&sid=" + Session.session_id;
+
+		// Send post request
+		con.setDoOutput(true);
+		DataOutputStream wr = new DataOutputStream(con.getOutputStream());
+		wr.writeBytes(urlParameters);
+		wr.flush();
+		wr.close();
+
+		int responseCode = con.getResponseCode();
+
+		BufferedReader in = new BufferedReader(
+				new InputStreamReader(con.getInputStream()));
+		String inputLine;
+		StringBuffer response = new StringBuffer();
+
+		while ((inputLine = in.readLine()) != null) {
+			response.append(inputLine);
+		}
+		in.close();
 	}
 	
 	public boolean isLastChunk(){
@@ -170,6 +278,7 @@ public class FileBuilder {
 					order + "\n" + status);
 			out.close();
 			
+			
 		} catch (Exception e){
 			e.printStackTrace();
 			return false;
@@ -180,6 +289,7 @@ public class FileBuilder {
 			
 			file_out.write(chunk);
 			file_out.close();
+			notifyChunkToServer(id);
 		} catch(Exception e){
 			e.printStackTrace();
 		}
@@ -228,7 +338,8 @@ public class FileBuilder {
 
 		return chunk;
 	}
-	
+
+
 	public boolean moveToDownloads(){
 		if(this.isLastChunk()){
 			File dst_file = new File(itorrPath.getDownloadsPath()+this.name);
@@ -257,10 +368,13 @@ public class FileBuilder {
 				dt_in.close();
 				dst_out.close();
 				src_in.close();
+				this.complete = true;
+				notifySeeder();
 			} catch(Exception e){
 				e.printStackTrace();
 				return false;
 			}
+			
 			return true;
 		} else {
 			System.out.println("File "+ this.id +":" + this.name +  " is not ready to be moved to Downloads dir");
