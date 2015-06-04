@@ -46,12 +46,13 @@ public class Test {
 
 
 	public static void main(String[] args) throws InterruptedException, SAXException, ParserConfigurationException, IOException, UndefinedPathException {
-
         CheckFoldersTest();
         //UPnPTest();
         //CoreTest();
+        StartSession();
+    }
 
-
+    private static void StartSession() {
         // Start
 
         // Se inicia conexion con un servidor
@@ -77,7 +78,6 @@ public class Test {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
 
         s.yield();
     }
@@ -161,7 +161,7 @@ public class Test {
         URL location = Test.class.getProtectionDomain().getCodeSource().getLocation();
         System.out.println(location.getFile());
 
-        FileManager f = new FileManager(location.getFile() + "idea.tar.gz");
+        FileManager f = new FileManager(location.getFile() + "transfer.mp3");
         if(f.checkFile()){
             FormatManager.createFormatFile(f);
         } else {

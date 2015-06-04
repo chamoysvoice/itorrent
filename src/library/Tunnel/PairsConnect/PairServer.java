@@ -1,4 +1,4 @@
-package library.Tunnel.Server;
+package library.Tunnel.PairsConnect;
 
 import library.GlobalVariables;
 import library.UPnP.GatewayDevice;
@@ -16,23 +16,23 @@ import java.util.Map;
 /**
  * Created by Leind on 26/05/2015.
  */
-public class Server {
+public class PairServer {
 
     // StartServer variables
-    private static int SERVER_PORT = GlobalVariables.SERVER_PORT;
-    private static MultiThreadServer server;
+    private static int SERVER_PORT = GlobalVariables.SERVER_PAIR_PORT;
+    private static MultiThreadPairServer server;
     private static GatewayDevice activeGW;
 
     // Start server
     // Call this in order to receive data
     //==============================================================================
-    public static void startServer(ChunkListener chunkCatcher) {
+    public static void startServer(PairListener catcher) {
         try { openPort(); }
         catch (IOException e) { e.printStackTrace(); }
         catch (SAXException e) { e.printStackTrace(); }
         catch (ParserConfigurationException e) { e.printStackTrace(); }
 
-        server = new MultiThreadServer(SERVER_PORT, chunkCatcher);
+        server = new MultiThreadPairServer(SERVER_PORT, catcher);
         new Thread(server).start();
     }
 
@@ -40,7 +40,7 @@ public class Server {
     // Call this when program finish in order to unmap the ports
     //==============================================================================
     public static void stopServer() {
-        System.out.println("Stopping Server");
+        System.out.println("Stopping PairServer");
         server.stop();
 
         try { closePort(); }

@@ -12,15 +12,17 @@ import java.util.concurrent.Executors;
 
 public class PoolServer implements Runnable{
 
-    protected int          serverPort   = 8080;
-    protected ServerSocket serverSocket = null;
-    protected boolean      isStopped    = false;
-    protected Thread       runningThread= null;
+    protected int             serverPort   = 8080;
+    protected ServerSocket    serverSocket = null;
+    protected boolean         isStopped    = false;
+    protected Thread          runningThread= null;
+    protected ChunkListener   chunkCatcher  = null;
     protected ExecutorService threadPool =
             Executors.newFixedThreadPool(10);
 
-    public PoolServer(int port){
+    public PoolServer(int port, ChunkListener chunkCatcher){
         this.serverPort = port;
+        this.chunkCatcher = chunkCatcher;
     }
 
     public void run(){
@@ -41,8 +43,7 @@ public class PoolServer implements Runnable{
                         "Error accepting client connection", e);
             }
             this.threadPool.execute(
-                    new Receiver(clientSocket,
-                            "Thread Pooled Server"));
+                    new Receiver(clientSocket, chunkCatcher));
         }
         this.threadPool.shutdown();
         System.out.println("Server Stopped.") ;

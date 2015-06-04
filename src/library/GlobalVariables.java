@@ -16,8 +16,6 @@ public class GlobalVariables {
 	
 	public static ArrayList<String> servers = new ArrayList<String>();
 	
-
-	
 	public static String current_server = "";
 
 	// UPnP
@@ -28,4 +26,9 @@ public class GlobalVariables {
 	// Ports
 	//===============================================================================
 	public static final int SERVER_PORT = 6992;
+	public static final int SERVER_PAIR_PORT = 6999;
+
+	// Handshake with pairs
+	//===============================================================================
+	public static final String poke = "hi";
 }

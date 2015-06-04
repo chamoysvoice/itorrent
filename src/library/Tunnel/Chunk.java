@@ -1,28 +1,20 @@
 package library.Tunnel;
 
+import library.FileSearcher;
 import library.GlobalVariables;
-import library.Utils.JSON.JSONObject;
-import test.Test;
-
 import java.io.*;
-import java.net.HttpURLConnection;
 import java.net.Socket;
-import java.net.URL;
-import java.net.URLConnection;
+import java.util.ArrayList;
 
 /**
  * Created by leind on 14/05/15.
- *
- * JSON usage:
- * JSONObject json = new JSONObject(response.toString());
- * System.out.println("phonetype = " + json.get("phonetype"));
- * System.out.println("cat = " + json.get("cat"));
  */
 public class Chunk extends Thread {
     // Who to request or send chunk
     private String who;
     private Socket socket;
     private int serverPort = GlobalVariables.SERVER_PORT;
+    private int serverPairPort = GlobalVariables.SERVER_PAIR_PORT;
     private boolean sending;
 
     // Sending variables
@@ -32,7 +24,7 @@ public class Chunk extends Thread {
     // Receiving variables
     private long fileID;
     private long chunkID;
-    private JSONObject friends;
+    private ArrayList<String> ipPairs;
 
     // Thread variables
     volatile boolean finished = false;
@@ -52,6 +44,16 @@ public class Chunk extends Thread {
         return this;
     }
 
+    public Chunk fileID(long fileID) {
+        this.fileID = fileID;
+        return this;
+    }
+
+    public Chunk chunkID(long chunkID) {
+        this.chunkID = chunkID;
+        return this;
+    }
+
     public Chunk fromByte(int fromByte) {
         this.fromByte = fromByte;
         return this;
@@ -61,69 +63,108 @@ public class Chunk extends Thread {
     //=========================================================
     public Chunk request(long fileID, long chunkID) {
         this.sending = false;
+        this.fileID = fileID;
+        this. chunkID = chunkID;
         return this;
     }
 
     // Threading stuff
     //=========================================================
-    public void stopMe() {
+    /**
+     * Call this to stop the current thread
+     */
+    private void stopMe() {
         finished = true;
     }
 
+    /**
+     * Thread main method .start()
+     */
     public void run() {
         while (!finished) {
             // If sending data
             if (sending) {
-                try { sendBytes(); }
+                try { sendChunk(); }
                 catch (IOException e) { e.printStackTrace(); stopMe(); }
             }
 
             // If requesting data
             else {
-                try {
-                    // If response code: 200
-                    if (sendGetRequest()) {
-                        stopMe();
-                    }
-                    else { stopMe(); }
+                if (getPairsFromServer()) {
+                    giveMeChunk();
+                    stopMe();
                 }
-                catch (Exception e) { e.printStackTrace(); stopMe(); }
+                else { System.out.println("Failed to get the pairs IPs"); stopMe(); }
             }
         }
     }
 
     // Net methods
     //=========================================================
+    private void giveMeChunk() {
+        pokePairs();
+        return;
+    }
+
+    /**
+     * Tells to the ips of the array "Hey send me this chunk please"
+     * When an IP responds with true [askForChunk()] will break
+     * If an IP response with false [askForChunk()] will try with the next ip
+     */
+    private void pokePairs() {
+        for (String pair : this.ipPairs) {
+            try {
+                if (askForChunk(pair))
+                    break;
+            }
+            catch (IOException e) { e.printStackTrace(); }
+        }
+    }
+
+    private boolean askForChunk(String pair) throws IOException {
+        socket = new Socket("127.0.0.1", this.serverPairPort);
+
+        /// The string contains the "[poke],[fileID],[chunkID]"
+        String toSend = GlobalVariables.poke
+                        + ","
+                        + String.valueOf(this.fileID)
+                        + ","
+                        + String.valueOf(this.chunkID);
+
+        ObjectOutputStream oos = null;
+
+        oos = new ObjectOutputStream(socket.getOutputStream());
+        System.out.println("Sending request to Socket Server");
+
+        oos.writeObject(toSend);
+        oos.close();
+
+        return true;
+    }
+
     /**
      * Sends GET method to server api
-     * Sets the response into a JSON member object
+     * Sets the response into a member pairs IPs ArrayList<>
      */
-    private boolean sendGetRequest() throws Exception {
+    private boolean getPairsFromServer() {
+        //String url = GlobalVariables.current_server;
+        try { ipPairs = FileSearcher.searchChunk(this.fileID, this.chunkID); }
+        catch (IOException e) { e.printStackTrace(); return false; }
 
-        String url = "https://api.myjson.com/bins/1364k";
-        URL obj = new URL(url);
-        HttpURLConnection con = (HttpURLConnection) obj.openConnection();
-
-        con.setRequestMethod("GET");
-        con.setRequestProperty("User-Agent", "Mozilla/5.0");
-
-        int responseCode = con.getResponseCode();
-        System.out.println("\nSending 'GET' request to URL : " + url);
-        System.out.println("Response Code : " + responseCode);
-
-        // If request failed, stop
-        if (responseCode != 200) { return false; }
-
-        BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
-        String inputLine;
-        StringBuffer response = new StringBuffer();
-
-        while ((inputLine = in.readLine()) != null) { response.append(inputLine); }
-        in.close();
-
-        // Set this JSONObject
-        this.friends = new JSONObject(response.toString());
         return true;
+    }
+
+    private void sendChunk() throws IOException {
+        socket = new Socket(this.who, this.serverPort);
+        ObjectOutputStream outputStream = new ObjectOutputStream(socket.getOutputStream());
+        ChunkModel chunk = new ChunkModel(this.chunk, this.fileID, this.chunkID);
+        outputStream.writeObject(chunk);
+
+        outputStream.flush();
+        outputStream.close();
+        socket.close();
+
+        stopMe();
     }
 
     /**
@@ -161,22 +202,6 @@ public class Chunk extends Thread {
         out.close();
         socket.close();
 
-    }
-
-    /**
-     * Receive data over TCP.
-     *
-     * @return  byte array of the data received
-     */
-    private byte[] readBytes() throws IOException {
-        InputStream in = socket.getInputStream();
-        DataInputStream dis = new DataInputStream(in);
-
-        int len = dis.readInt();
-        byte[] data = new byte[len];
-        if (len > 0) {
-            dis.readFully(data);
-        }
-        return data;
+        stopMe();
     }
 }

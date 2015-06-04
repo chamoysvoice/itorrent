@@ -1,8 +1,11 @@
 package library.Tunnel.Server;
 
+import library.Tunnel.Chunk;
+import library.Tunnel.ChunkModel;
+
 /**
- * Created by Leind on 26/05/2015.
+ * Created by Leind on 04/06/2015.
  */
-interface ChunkListener {
-    void onFinishedSending();
+public interface ChunkListener {
+    public void onChunkReceived(ChunkModel chunk);
 }

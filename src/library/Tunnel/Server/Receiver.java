@@ -1,10 +1,16 @@
 package library.Tunnel.Server;
 
+import library.Tunnel.Chunk;
+import library.Tunnel.ChunkModel;
+import library.Tunnel.PairsConnect.PairListener;
 import test.Test;
 
 import java.io.*;
 import java.net.Socket;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Created by Leind on 24/05/2015.
@@ -12,46 +18,49 @@ import java.net.URL;
 public class Receiver implements Runnable{
 
     protected Socket clientSocket = null;
-    protected String serverText   = null;
+    List<ChunkListener> listeners = new ArrayList<ChunkListener>();
 
-    volatile boolean finished = false;
+    private ObjectInputStream inStream;
 
-    private InputStream is;
-    private int bufferSize;
-    FileOutputStream fos = null;
-    DataInputStream dIn;
-
-    public Receiver(Socket clientSocket, String serverText) {
+    /**
+     * Add this listener to listeners list
+     * */
+    public Receiver(Socket clientSocket, ChunkListener chunkListener) {
         this.clientSocket = clientSocket;
-        this.serverText   = serverText;
+        addListener(chunkListener);
+    }
+
+    public void addListener(ChunkListener toAdd) {
+        listeners.add(toAdd);
+    }
+
+    /**
+     * Notify when a chunk has been received
+     * */
+    public void notifyReceived(ChunkModel chunk) {
+        for (ChunkListener pairlistener : listeners)
+            pairlistener.onChunkReceived(chunk);
     }
 
     public void run() {
-        try {
-            is = clientSocket.getInputStream();
-            dIn = new DataInputStream(is);
+        ChunkModel chunk = new ChunkModel();
 
-            bufferSize = clientSocket.getReceiveBufferSize();
-            System.out.println("Buffer size: " + bufferSize);
+        try {
+            inStream = new ObjectInputStream(clientSocket.getInputStream());
+            chunk = (ChunkModel) inStream.readObject();
+            System.out.println("Object received");
         }
-        catch (IOException ex) { System.out.println("Can't get socket input stream. "); }
+        catch (IOException e) { e.printStackTrace(); }
+        catch (ClassNotFoundException e) { e.printStackTrace(); }
+
+        notifyReceived(chunk);
 
         try {
-            URL location = Test.class.getProtectionDomain().getCodeSource().getLocation();
-            System.out.println(location.getFile());
-            fos = new FileOutputStream(location.getFile() + "test2.txt");
-        }
-        catch (FileNotFoundException ex) { System.out.println("File not found. ");}
-
-        byte[] bytes = new byte[bufferSize];
-
-        int count;
-
-        try {
-            is.read(bytes);
-            is.close();
+            inStream.close();
             clientSocket.close();
         }
         catch (IOException e) { e.printStackTrace(); }
+
+        return;
     }
 }

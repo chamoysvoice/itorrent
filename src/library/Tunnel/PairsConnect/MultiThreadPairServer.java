@@ -1,4 +1,4 @@
-package library.Tunnel.Server;
+package library.Tunnel.PairsConnect;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -7,38 +7,37 @@ import java.net.Socket;
 /**
  * Created by Leind on 24/05/2015.
  */
-public class MultiThreadServer implements Runnable {
-    protected int           serverPort    = 8080;
-    protected ServerSocket  serverSocket  = null;
-    protected boolean       isStopped     = false;
-    protected Thread        runningThread = null;
-    protected ChunkListener chunkCatcher  = null;
+public class MultiThreadPairServer implements Runnable {
+    protected int          serverPort    = 8081;
+    protected ServerSocket serverSocket  = null;
+    protected boolean      isStopped     = false;
+    protected Thread       runningThread = null;
+    protected PairListener catcher       = null;
 
-    public MultiThreadServer(int port, ChunkListener chunkCatcher){
-        this.serverPort = port;
-        this.chunkCatcher = chunkCatcher;
-    }
+    public MultiThreadPairServer(int port, PairListener catcher){ this.serverPort = port; this.catcher = catcher;}
 
     public void run(){
         synchronized(this){
             this.runningThread = Thread.currentThread();
         }
         openServerSocket();
-        while(! isStopped()){
+        while(!isStopped()){
             Socket clientSocket = null;
             try {
                 clientSocket = this.serverSocket.accept();
-            } catch (IOException e) {
+            }
+            catch (IOException e) {
                 if(isStopped()) {
-                    System.out.println("Server Stopped.") ;
+                    System.out.println("PairServer Stopped.") ;
                     return;
                 }
                 throw new RuntimeException(
                         "Error accepting client connection", e);
             }
-            new Thread(new Receiver(clientSocket, chunkCatcher)).start();
+
+            new Thread(new PairReceiver(clientSocket, catcher)).start();
         }
-        System.out.println("Server Stopped.") ;
+        System.out.println("PairServer Stopped.") ;
     }
 
 
@@ -51,7 +50,7 @@ public class MultiThreadServer implements Runnable {
         try {
             this.serverSocket.close();
         } catch (IOException e) {
-            throw new RuntimeException("Error closing server", e);
+            throw new RuntimeException("Error closing pair server", e);
         }
     }
 
@@ -59,7 +58,7 @@ public class MultiThreadServer implements Runnable {
         try {
             this.serverSocket = new ServerSocket(this.serverPort);
         } catch (IOException e) {
-            throw new RuntimeException("Cannot open port 8080", e);
+            throw new RuntimeException("Cannot open port " + this.serverPort, e);
         }
     }
 
