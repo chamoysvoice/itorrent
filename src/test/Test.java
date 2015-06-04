@@ -46,7 +46,7 @@ public class Test {
 
 
 	public static void main(String[] args) throws InterruptedException, SAXException, ParserConfigurationException, IOException, UndefinedPathException {
-        CheckFoldersTest();
+        checkFoldersTest();
         //UPnPTest();
         //CoreTest();
         StartSession();
@@ -84,7 +84,7 @@ public class Test {
 
 	// Check / Create directories test
 	//==============================================================================
-    private static void CheckFoldersTest() throws UndefinedPathException {
+    public static void checkFoldersTest() throws UndefinedPathException {
         itorrPath = new PathBuilder(OSDetector.getOS());
         isCreated = false;
         checkBasePath();

@@ -22,7 +22,12 @@ public class Start {
     static byte[] aa = {(byte)0x03, (byte)0x00, (byte)0x00, (byte)0x00};
 
     public static void main(String[] args) throws InterruptedException, SAXException, ParserConfigurationException, IOException, UndefinedPathException {
+        Test.checkFoldersTest();
+        startSession();
+
+        // Can only be called once per computer
         //startServers();
+
         requestSomething();
         sendSomething();
     }
@@ -44,12 +49,15 @@ public class Start {
     }
 
     public static void requestSomething() {
+        Chunk chunk = new Chunk();
+        chunk.request(237, 40).start();
+    }
+
+    private static void startSession() {
         session = new Session();
         session.changeServer();
         session.start();
-
-        Chunk chunk = new Chunk();
-        chunk.request(237, 40).start();
+        session.yield();
     }
 
     // Someone asking for chunk
@@ -59,10 +67,15 @@ public class Start {
             System.out.println("-------------------");
             System.out.print("Message: " + message + "\nFileID: " + fileID + "\nChunkId: " + chunkID);
             System.out.println("------------------- \n");
+
+            // TODO:
+            // Check if the chunk requested can be sended and send it via
+            //  Chunk chunk = new Chunk();
+            //  chunk.request(237, 40).start();
         }
     }
 
-    // Someone asking for chunk
+    // Someone sended me a chunk
     static class ChunkCatcher implements ChunkListener{
         @Override
         public void onChunkReceived(ChunkModel chunk) {
@@ -71,6 +84,9 @@ public class Start {
             System.out.println("Chunk: " + chunk.getChunkID());
             System.out.println("Same byte array: " + Arrays.equals(aa, chunk.getData()));
             System.out.println("\n------------------- \n");
+
+            // TODO:
+            // Put this chunk wherever it belongs to
         }
     }
 }
