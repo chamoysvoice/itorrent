@@ -4,18 +4,16 @@
 
 package test;
 
-import library.FileBuilder;
-import library.FileManager;
-import library.FormatManager;
-import library.GlobalVariables;
-import library.Security;
-import library.Session;
+import jdk.nashorn.internal.objects.Global;
+import library.*;
 import library.UPnP.GatewayDevice;
 import library.UPnP.GatewayDiscover;
 import library.UPnP.PortMappingEntry;
 import library.Utils.OSDetector;
 import library.Utils.PathBuilder;
 import library.Utils.UndefinedPathException;
+
+import java.util.ArrayList;
 
 import org.xml.sax.SAXException;
 
@@ -28,6 +26,8 @@ import java.net.URL;
 import java.text.DateFormat;
 import java.util.Date;
 import java.util.Map;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 
 public class Test {
@@ -42,12 +42,44 @@ public class Test {
 	//==============================================================================
     private static PathBuilder itorrPath;
     private static boolean isCreated;
-    private static int testItorId = 19;
+    private static Session s;
+
 
 	public static void main(String[] args) throws InterruptedException, SAXException, ParserConfigurationException, IOException, UndefinedPathException {
-        //CheckFoldersTest();
+
+        CheckFoldersTest();
         //UPnPTest();
-        CoreTest();
+        //CoreTest();
+
+
+        // Start
+
+        // Se inicia conexion con un servidor
+        s = new Session();
+        s.changeServer();
+        s.start();
+
+        /*
+        // se inician todos los archivos que hay
+        int dot;
+        ArrayList<String> files  = new ArrayList<String>();
+        ArrayList<FileBuilder> filebuilders = new ArrayList<FileBuilder>();
+        files = FileManager.listFilesForFolder(new File(itorrPath.getTorrentsPath()));
+        for (String s: files){
+            if (s.charAt(s.length()-1) == 'r'){
+                dot = s.indexOf(".");
+                filebuilders.add(new FileBuilder(itorrPath.getTorrentsPath()+ s.substring(0,dot) + ".itor", Long.parseLong(s.substring(0,dot))));
+            }
+        }
+        */
+        try {
+            FileSearcher.searchChunk(237, 40); // regresa el IP de todos los que tengan ese chunk
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+
+        s.yield();
     }
 
 	// Check / Create directories test
@@ -128,34 +160,33 @@ public class Test {
         int chunk_id;
         URL location = Test.class.getProtectionDomain().getCodeSource().getLocation();
         System.out.println(location.getFile());
-        Session s = new Session();
-        s.changeServer();
-        
-        FileManager f = new FileManager(location.getFile() + "game.mp4");
+
+        FileManager f = new FileManager(location.getFile() + "idea.tar.gz");
         if(f.checkFile()){
-            FormatManager.createFormatFile(testItorId, f);
+            FormatManager.createFormatFile(f);
         } else {
             System.out.println("Could not create .itor file\nCheck that the giving file exists on path\nAborting...");
             return;
         }
-        /*
-        FileBuilder fb = new FileBuilder(itorrPath.getTorrentsPath() + testItorId + ".itor", testItorId);
+
+        System.out.println(itorrPath.getTorrentsPath());
+        FileBuilder fb = new FileBuilder(itorrPath.getTorrentsPath() + f.id + ".itor", f.id);
         fb.getServers().forEach(System.out::println);
         while((chunk_id = fb.searchMissingChunk()) != -1){
         	fb.addChunk(chunk_id, f.get_chunk(chunk_id));
         }
         if(!fb.isLastChunk()){
-        	System.out.println("adding last chunk");
-        	if(fb.addChunk(f.count_chunks() - 1, f.get_chunk(f.count_chunks()-1))){
-        		System.out.println("file completed");
+            System.out.println("adding last chunk");
+            if (fb.addChunk(f.count_chunks() - 1, f.get_chunk(f.count_chunks() - 1))) {
+                System.out.println("file completed");
         	}
         }
         
         if(fb.isLastChunk()){
         	fb.moveToDownloads();
         }
-        */
-       
+
+
     }
 
     // UPnP test function

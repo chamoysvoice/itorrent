@@ -11,7 +11,8 @@ import java.util.List;
 
 public class FormatManager {
 
-	public static int createFormatFile(int id, FileManager file) throws UndefinedPathException {
+	public static int createFormatFile(FileManager file) throws UndefinedPathException {
+		long id = file.id;
 		PathBuilder itorrPath = new PathBuilder(OSDetector.getOS());
 		PrintWriter file_writer;
 		long countChunks = file.count_chunks();
