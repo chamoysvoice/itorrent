@@ -26,7 +26,7 @@ public class GlobalVariables {
 	// Ports
 	//===============================================================================
 	public static final int SERVER_PORT = 6992;
-	public static final int SERVER_PAIR_PORT = 7000;
+	public static final int SERVER_PAIR_PORT = 6999;
 
 	// Handshake with pairs
 	//===============================================================================

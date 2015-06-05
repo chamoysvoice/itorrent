@@ -162,7 +162,37 @@ public class FileBuilder implements PairListener, ChunkListener {
 	public ArrayList<String> getServers(){
 		return this.servers;
 	}
-	
+
+    public void setChunkFlag(long chunkID){
+        File temp_file = new File(itorrPath.getTempPath() + this.id + ".dt");
+        String status = "", line, size, order;
+        int i = 0;
+        try{
+            BufferedReader in = new BufferedReader(new FileReader(temp_file));
+            size = in.readLine();
+            order = in.readLine();
+            line = in.readLine();
+            while(line != null){
+                if(i == chunkID){
+                    status = new String(status + "c" + id + "=2\n");
+                } else {
+                    status = new String(status + line +"\n");
+                }
+                i++;
+                line = in.readLine();
+            }
+
+            in.close();
+            BufferedWriter out = new BufferedWriter(new FileWriter(temp_file));
+            out.write(size + "\n" +
+                    order + "\n" + status);
+            out.close();
+
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
 	public int searchMissingChunk(){
 		File f = new File(this.temp_file_path);
 		String letter;
@@ -179,6 +209,10 @@ public class FileBuilder implements PairListener, ChunkListener {
 					if(status != GlobalVariables.FOUND && i != this.number_of_chunks - 1){
 						return i;
 					}
+                    if(this.isLastChunk()){
+                        return this.number_of_chunks;
+                    }
+
 					i++;
 				}
 			}
@@ -250,7 +284,9 @@ public class FileBuilder implements PairListener, ChunkListener {
 		}
 		return false;
 	}
-	
+
+
+
 	public boolean addChunk(long id, byte[] chunk){
 
 		File temp_file = new File(itorrPath.getTempPath() + this.id + ".dt");
@@ -386,12 +422,14 @@ public class FileBuilder implements PairListener, ChunkListener {
 		}
 	}
 
+    public long getFileID() { return this.id; }
+
 	@Override
 	public void onPairConnected(String message, long fileID, long chunkID) {
 		System.out.println(message);
 		if (fileID == this.id) {
 			Chunk chunk = new Chunk();
-			chunk.send(this.getChunk(chunkID)).to(message).fileID(fileID).chunkID(chunkID);
+			chunk.send(this.getChunk(chunkID)).to(message).fileID(fileID).chunkID(chunkID).start();
 		}
 	}
 

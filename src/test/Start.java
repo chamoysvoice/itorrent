@@ -9,6 +9,7 @@ import library.Tunnel.Chunk;
 import library.Tunnel.ChunkModel;
 import library.Tunnel.PairsConnect.PairListener;
 import library.Tunnel.PairsConnect.PairServer;
+import library.Tunnel.PeneErecto;
 import library.Tunnel.Server.ChunkListener;
 import library.Tunnel.Server.Server;
 import library.Utils.OSDetector;
@@ -39,21 +40,27 @@ public class Start {
 
     public static void main(String[] args) throws InterruptedException, SAXException, ParserConfigurationException, IOException, UndefinedPathException {
         // You should work with UI (including installing L&F) inside Event Dispatch Thread (EDT)
-        //SwingUtilities.invokeLater(() -> {
-        //    WebLookAndFeel.install();
-        //   new GUI.Client().setVisible(true);
-        //});
+        SwingUtilities.invokeLater(() -> {
+            WebLookAndFeel.install();
+           new GUI.Client().setVisible(true);
+        });
         startSession();
         loadItorFiles();
 
-        //Test.checkFoldersTest();
-
+        Test.checkFoldersTest();
         // Can only be called once per computer
-        //addListeners();
-        //startServers();
+        addListeners();
+        startServers();
+        Thread.sleep(100);
 
-        requestSomething();
-        sendSomething();
+        //requestSomething();
+        //sendSomething();
+        runChunkChecker();
+    }
+
+    private static void runChunkChecker() {
+        System.out.println("Checking");
+        new Thread(new PeneErecto()).start();
     }
 
     private static void loadItorFiles() throws UndefinedPathException {
@@ -105,6 +112,10 @@ public class Start {
         session.changeServer();
         session.start();
         session.yield();
+    }
+
+    public static List<FileBuilder> getFileBuilders() {
+        return filebuilders;
     }
 
     // Someone asking for chunk

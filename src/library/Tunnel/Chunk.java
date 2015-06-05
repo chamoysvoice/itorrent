@@ -64,6 +64,7 @@ public class Chunk extends Thread {
     // Chunk send constructors
     //=========================================================
     public Chunk request(long fileID, long chunkID) {
+        System.out.println("Requesting" + chunkID);
         this.sending = false;
         this.fileID = fileID;
         this. chunkID = chunkID;
@@ -124,6 +125,7 @@ public class Chunk extends Thread {
     }
 
     private boolean askForChunk(String pair) throws IOException {
+        System.out.println("Pair: " + pair);
         if (pair.equals(""))
             socket = new Socket("127.0.0.1", this.serverPairPort);
         else
