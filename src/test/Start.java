@@ -1,5 +1,6 @@
 package test;
 
+import com.alee.laf.WebLookAndFeel;
 import library.Session;
 import library.Tunnel.Chunk;
 import library.Tunnel.ChunkModel;
@@ -9,7 +10,10 @@ import library.Tunnel.Server.ChunkListener;
 import library.Tunnel.Server.Server;
 import library.Utils.UndefinedPathException;
 import org.xml.sax.SAXException;
+
+import javax.swing.*;
 import javax.xml.parsers.ParserConfigurationException;
+import java.awt.*;
 import java.io.IOException;
 import java.util.Arrays;
 
@@ -22,14 +26,23 @@ public class Start {
     static byte[] aa = {(byte)0x03, (byte)0x00, (byte)0x00, (byte)0x00};
 
     public static void main(String[] args) throws InterruptedException, SAXException, ParserConfigurationException, IOException, UndefinedPathException {
+        // You should work with UI (including installing L&F) inside Event Dispatch Thread (EDT)
+        SwingUtilities.invokeLater(() -> {
+            WebLookAndFeel.install();
+            new GUI.Client().setVisible(true);
+        });
+
         Test.checkFoldersTest();
         startSession();
 
         // Can only be called once per computer
-        //startServers();
+        startServers();
 
-        requestSomething();
-        sendSomething();
+        //requestSomething();
+        //sendSomething();
+    }
+
+    private void initComponents() {
     }
 
     // Starts core server and PairServer to communicate with other clients
