@@ -1,0 +1,9 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="itorrent:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/itorrent_jar</output-path>
+    <root id="archive" name="itorrent.jar">
+      <element id="module-output" name="itorrent" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/src/libs/weblaf-complete-1.28.jar" path-in-jar="/" />
+    </root>
+  </artifact>
+</component>

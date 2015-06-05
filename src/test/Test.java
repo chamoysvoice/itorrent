@@ -60,20 +60,21 @@ public class Test {
         s.changeServer();
         s.start();
 
-        /*
+
         // se inician todos los archivos que hay
         int dot;
         ArrayList<String> files  = new ArrayList<String>();
         ArrayList<FileBuilder> filebuilders = new ArrayList<FileBuilder>();
         files = FileManager.listFilesForFolder(new File(itorrPath.getTorrentsPath()));
-        for (String s: files){
-            if (s.charAt(s.length()-1) == 'r'){
-                dot = s.indexOf(".");
-                filebuilders.add(new FileBuilder(itorrPath.getTorrentsPath()+ s.substring(0,dot) + ".itor", Long.parseLong(s.substring(0,dot))));
-            }
-        }
-        */
+
+
         try {
+            for (String s: files){
+                if (s.charAt(s.length()-1) == 'r'){
+                    dot = s.indexOf(".");
+                    filebuilders.add(new FileBuilder(itorrPath.getTorrentsPath()+ s.substring(0,dot) + ".itor", Long.parseLong(s.substring(0,dot))));
+                }
+            }
             FileSearcher.searchChunk(237, 40); // regresa el IP de todos los que tengan ese chunk
         } catch (Exception e) {
             e.printStackTrace();

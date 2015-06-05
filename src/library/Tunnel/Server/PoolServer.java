@@ -7,20 +7,21 @@ package library.Tunnel.Server;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.io.IOException;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class PoolServer implements Runnable{
 
-    protected int             serverPort   = 8080;
-    protected ServerSocket    serverSocket = null;
-    protected boolean         isStopped    = false;
-    protected Thread          runningThread= null;
-    protected ChunkListener   chunkCatcher  = null;
-    protected ExecutorService threadPool =
+    protected int                   serverPort   = 8080;
+    protected ServerSocket          serverSocket = null;
+    protected boolean               isStopped    = false;
+    protected Thread                runningThread= null;
+    protected List<ChunkListener>   chunkCatcher  = null;
+    protected ExecutorService       threadPool =
             Executors.newFixedThreadPool(10);
 
-    public PoolServer(int port, ChunkListener chunkCatcher){
+    public PoolServer(int port, List<ChunkListener> chunkCatcher){
         this.serverPort = port;
         this.chunkCatcher = chunkCatcher;
     }

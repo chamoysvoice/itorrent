@@ -3,6 +3,7 @@ package library.Tunnel.PairsConnect;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.List;
 
 /**
  * Created by Leind on 24/05/2015.
@@ -12,9 +13,9 @@ public class MultiThreadPairServer implements Runnable {
     protected ServerSocket serverSocket  = null;
     protected boolean      isStopped     = false;
     protected Thread       runningThread = null;
-    protected PairListener catcher       = null;
+    protected List<PairListener> catcher       = null;
 
-    public MultiThreadPairServer(int port, PairListener catcher){ this.serverPort = port; this.catcher = catcher;}
+    public MultiThreadPairServer(int port, List<PairListener> catcher){ this.serverPort = port; this.catcher = catcher;}
 
     public void run(){
         synchronized(this){

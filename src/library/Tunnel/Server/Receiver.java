@@ -11,6 +11,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Created by Leind on 24/05/2015.
@@ -25,13 +26,13 @@ public class Receiver implements Runnable{
     /**
      * Add this listener to listeners list
      * */
-    public Receiver(Socket clientSocket, ChunkListener chunkListener) {
+    public Receiver(Socket clientSocket, List<ChunkListener> chunkListener) {
         this.clientSocket = clientSocket;
         addListener(chunkListener);
     }
 
-    public void addListener(ChunkListener toAdd) {
-        listeners.add(toAdd);
+    public void addListener(List<ChunkListener> chunkListeners) {
+        this.listeners.addAll(chunkListeners.stream().collect(Collectors.toList()));
     }
 
     /**

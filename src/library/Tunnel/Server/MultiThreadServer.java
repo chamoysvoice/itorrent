@@ -3,6 +3,7 @@ package library.Tunnel.Server;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.List;
 
 /**
  * Created by Leind on 24/05/2015.
@@ -12,9 +13,9 @@ public class MultiThreadServer implements Runnable {
     protected ServerSocket  serverSocket  = null;
     protected boolean       isStopped     = false;
     protected Thread        runningThread = null;
-    protected ChunkListener chunkCatcher  = null;
+    protected List<ChunkListener> chunkCatcher  = null;
 
-    public MultiThreadServer(int port, ChunkListener chunkCatcher){
+    public MultiThreadServer(int port, List<ChunkListener> chunkCatcher){
         this.serverPort = port;
         this.chunkCatcher = chunkCatcher;
     }
@@ -41,7 +42,6 @@ public class MultiThreadServer implements Runnable {
         System.out.println("Server Stopped.") ;
     }
 
-
     private synchronized boolean isStopped() {
         return this.isStopped;
     }
@@ -62,5 +62,4 @@ public class MultiThreadServer implements Runnable {
             throw new RuntimeException("Cannot open port 8080", e);
         }
     }
-
 }

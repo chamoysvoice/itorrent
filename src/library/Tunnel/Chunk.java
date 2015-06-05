@@ -3,7 +3,9 @@ package library.Tunnel;
 import library.FileSearcher;
 import library.GlobalVariables;
 import java.io.*;
+import java.net.InetAddress;
 import java.net.Socket;
+import java.net.URL;
 import java.util.ArrayList;
 
 /**
@@ -122,10 +124,18 @@ public class Chunk extends Thread {
     }
 
     private boolean askForChunk(String pair) throws IOException {
-        socket = new Socket("127.0.0.1", this.serverPairPort);
+        if (pair.equals(""))
+            socket = new Socket("127.0.0.1", this.serverPairPort);
+        else
+            socket = new Socket(pair, this.serverPairPort);
+
+        URL whatismyip = new URL("http://checkip.amazonaws.com");
+        BufferedReader in = new BufferedReader(new InputStreamReader(
+                whatismyip.openStream()));
+        String ip = in.readLine(); //you get the IP as a String
 
         /// The string contains the "[poke],[fileID],[chunkID]"
-        String toSend = GlobalVariables.poke
+        String toSend = ip
                         + ","
                         + String.valueOf(this.fileID)
                         + ","

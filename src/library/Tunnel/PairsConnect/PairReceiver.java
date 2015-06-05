@@ -5,6 +5,7 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Created by Leind on 24/05/2015.
@@ -17,13 +18,13 @@ public class PairReceiver implements Runnable{
 
     List<PairListener> listeners = new ArrayList<PairListener>();
 
-    public PairReceiver(Socket clientSocket, PairListener catcher) {
+    public PairReceiver(Socket clientSocket, List<PairListener> catcher) {
         this.clientSocket = clientSocket;
         addListener(catcher);
     }
 
-    public void addListener(PairListener toAdd) {
-        listeners.add(toAdd);
+    public void addListener(List<PairListener> listeners) {
+        this.listeners.addAll(listeners.stream().collect(Collectors.toList()));
     }
 
     /**

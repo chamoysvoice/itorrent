@@ -10,7 +10,9 @@ import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.text.DateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -26,7 +28,7 @@ public class Server {
     // Start server
     // Call this in order to receive data
     //==============================================================================
-    public static void startServer(ChunkListener chunkCatcher) {
+    public static void startServer(List<ChunkListener> chunkCatcher) {
         try { openPort(); }
         catch (IOException e) { e.printStackTrace(); }
         catch (SAXException e) { e.printStackTrace(); }

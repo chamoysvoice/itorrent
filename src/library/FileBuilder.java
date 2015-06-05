@@ -1,5 +1,9 @@
 package library;
 
+import library.Tunnel.Chunk;
+import library.Tunnel.ChunkModel;
+import library.Tunnel.PairsConnect.PairListener;
+import library.Tunnel.Server.ChunkListener;
 import library.Utils.OSDetector;
 import library.Utils.PathBuilder;
 import library.Utils.UndefinedPathException;
@@ -12,7 +16,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-public class FileBuilder {
+public class FileBuilder implements PairListener, ChunkListener {
 
 	private ArrayList<String> servers;
 	private boolean[] chunk_status;
@@ -379,6 +383,23 @@ public class FileBuilder {
 		} else {
 			System.out.println("File "+ this.id +":" + this.name +  " is not ready to be moved to Downloads dir");
 			return false;
+		}
+	}
+
+	@Override
+	public void onPairConnected(String message, long fileID, long chunkID) {
+		System.out.println(message);
+		if (fileID == this.id) {
+			Chunk chunk = new Chunk();
+			chunk.send(this.getChunk(chunkID)).to(message).fileID(fileID).chunkID(chunkID);
+		}
+	}
+
+	@Override
+	public void onChunkReceived(ChunkModel chunk) {
+		System.out.println("Received in FileBuilder");
+		if (chunk.getFileID() == this.id) {
+			this.addChunk(chunk.getChunkID(), chunk.getData());
 		}
 	}
 }

@@ -19,7 +19,6 @@ public class Session extends Thread{
 		GlobalVariables.servers.add("http://45.55.151.143");
 		GlobalVariables.servers.add("http://45.55.232.142");
 		GlobalVariables.servers.add("http://46.101.38.180");
-
 	}
 
 	public static void main(String[] args){
@@ -106,7 +105,6 @@ public class Session extends Thread{
 	}
 
 	public boolean testServer(){
-
 		 try {
 
 			 URL obj = new URL(GlobalVariables.servers.get(choose) + "/session/init.php");
@@ -121,10 +119,10 @@ public class Session extends Thread{
 					System.out.println(GlobalVariables.servers.get(choose) + "/session/init.php is online");
 				}
 
-
 		 } catch (Exception e) {
 				e.printStackTrace();
 			    }
+
 		 	return true;
 		}
 

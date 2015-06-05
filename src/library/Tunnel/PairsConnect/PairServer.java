@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.text.DateFormat;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -26,7 +27,7 @@ public class PairServer {
     // Start server
     // Call this in order to receive data
     //==============================================================================
-    public static void startServer(PairListener catcher) {
+    public static void startServer(List<PairListener> catcher) {
         try { openPort(); }
         catch (IOException e) { e.printStackTrace(); }
         catch (SAXException e) { e.printStackTrace(); }
